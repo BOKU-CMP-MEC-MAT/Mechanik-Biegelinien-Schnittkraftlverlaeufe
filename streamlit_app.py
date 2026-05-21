@@ -250,13 +250,13 @@ def plot_verlauf(ax, x, y, farbe, invertiere_y=False):
 # ==============================================================================
 def generiere_pruefungsbeispiel():
     # Optional: Set the page width to wide for better chart viewing
-    st.set_page_config(page_title="Baustatik Generator", layout="wide")
+    st.set_page_config(page_title="Schnittgrößen Generator", layout="wide")
     
-    st.title("Zufallsgenerator für Baustatik")
+    st.title("Zufallsgenerator für Schnittgrößen")
     st.write("Klicken Sie auf den Button, um ein neues, stabiles System mit Schnittgrößen zu generieren.")
 
     if st.button("Neues Beispiel generieren", type="primary"):
-        with st.spinner("Berechne FEM..."):
+        with st.spinner("Berechne System..."):
             L, fixed, pinned, rollers, hinges, F_val, F_pos, q_val, q_start, q_end, sys_info = generiere_stabiles_zufallssystem()
             
             x, V_F, M_F, w_F          = berechne_fem(L, fixed, pinned, rollers, hinges, F_val, F_pos, 0, 0, 0)
