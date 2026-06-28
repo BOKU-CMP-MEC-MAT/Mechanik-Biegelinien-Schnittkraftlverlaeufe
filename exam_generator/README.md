@@ -15,18 +15,25 @@ and loads:
 
 * **`midspan`** – a straight beam with the truss connected **in the
   middle via a half joint** (Gelenk), pin + roller supports;
-* **`lframe`** – two beams meeting at a rigid **90° corner** (a frame),
-  fixed support + end truss;
-* **`gerber`** – two beam pieces **separated by an internal hinge with a
-  point force** (Gerber beam), fixed + roller + end truss.
+* **`lframe`** – two beam segments meeting at a rigid **90° corner**
+  (a frame), fixed support + end truss;
+* **`endspan`** – a straight cantilever beam fixed at one end with the
+  truss at the other end.
 
-On top of the template it randomises:
+Every system has **exactly two Scheiben** (one beam body + one truss),
+joined by a single hinge, so it is statically determinate by
+construction. On top of the template it randomises:
 
 * the **whole-system orientation** (0/90/180/270°), and
 * the **truss orientation independently** of the beam, so the beam can be
   horizontal while the truss points up / sideways / down;
-* a Warren truss with ≤ 8 members;
-* always ≥ 1 continuous UDL on the beams, plus point loads.
+* a truss with **5 or 7 members** (so both a Rundschnitt and a
+  Ritterschnitt are always askable); the truss is only ever loaded at
+  its joints — never by a continuous load;
+* always ≥ 1 continuous UDL on the beam, plus point loads.
+
+Fixed (clamped) supports are always drawn with their wall **perpendicular
+to the beam** axis.
 
 Each rolled system is solved and **verified** (global equilibrium, plus
 `M = 0` at every internal hinge); unstable/indeterminate rolls are

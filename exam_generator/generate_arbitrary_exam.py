@@ -111,8 +111,9 @@ def build_model(seed: int):
     rng = random.Random(seed)
     for _attempt in range(400):
         try:
-            tmpl = rng.choice(['midspan', 'lframe', 'gerber'])
+            tmpl = rng.choice(['midspan', 'lframe', 'endspan'])
             model, meta = _build_template(tmpl, rng)
+            _orient_fixed_supports(model, meta)      # walls perpendicular to beam
             res = ft.solve(model)
             meta['res'] = res
             meta['template'] = tmpl
@@ -120,6 +121,25 @@ def build_model(seed: int):
         except Exception:
             continue
     raise RuntimeError("could not build a stable system for this seed")
+
+
+def _orient_fixed_supports(model, meta):
+    """Orient each fixed (clamped) support so its wall is PERPENDICULAR to
+    the beam: the 'ground' direction points along the beam axis, away from
+    the structure (into the wall)."""
+    for sup in model.supports:
+        if sup.kind != 'fixed':
+            continue
+        for sch in model.scheiben:
+            if sch.kind == 'beam' and sup.node in sch.path:
+                i = sch.path.index(sup.node)
+                nb = sch.path[i + 1] if i == 0 else sch.path[i - 1]
+                x0, y0 = model.nodes[sup.node]; x1, y1 = model.nodes[nb]
+                vx, vy = x0 - x1, y0 - y1            # neighbour -> support
+                meta['outdir'][sup.node] = ((1.0 if vx > 0 else -1.0, 0.0)
+                                            if abs(vx) >= abs(vy)
+                                            else (0.0, 1.0 if vy > 0 else -1.0))
+                break
 
 
 def _truss_params(rng):
@@ -135,9 +155,7 @@ def _build_template(tmpl, rng):
     q = float(rng.choice([2, 3, 4, 5]))
     P = float(rng.choice([10, 12, 15, 20]))
     shape, p, h = _truss_params(rng)
-    # the long Gerber beam reads best horizontally; others use any orientation
-    base_angle = rng.choice([0, 180]) if tmpl == 'gerber' \
-        else rng.choice([0, 90, 180, 270])
+    base_angle = rng.choice([0, 90, 180, 270])     # whole-system orientation
     truss_extra = rng.choice([0, 90, 180, 270])    # truss rotated vs beam
     nodes = {}
     meta = dict(outdir={}, given=[], q=q, P=P, a=a, shape=shape, p=p, h=h,
@@ -176,19 +194,17 @@ def _build_template(tmpl, rng):
         udls = [(0, 1, *rot(base_angle, 0, -q))]    # UDL on horizontal leg
         ploads = []
 
-    else:  # gerber: P0(fixed)--G(hinge,+force)--D(roller)--P1, truss at P1
-        place('P0', 0, 0); place('G', a, 0); place('D', 2 * a, 0); place('P1', 3 * a, 0)
-        s1 = ft.Scheibe('beam', path=['P0', 'G'], nodes=['P0', 'G'])
-        s2 = ft.Scheibe('beam', path=['G', 'D', 'P1'], nodes=['G', 'D', 'P1'])
-        conn = 'P1'
-        supports = [ft.Support('P0', 'fixed'),
-                    ft.Support('D', 'roller', rot(base_angle, 0, 1))]
+    else:  # endspan: straight cantilever beam P0(fixed)--P1--P2, truss at the end P2
+        place('P0', 0, 0); place('P1', a, 0); place('P2', 2 * a, 0)
+        beam = ft.Scheibe('beam', path=['P0', 'P1', 'P2'],
+                          nodes=['P0', 'P1', 'P2'])
+        conn = 'P2'
+        supports = [ft.Support('P0', 'fixed')]
         meta['outdir']['P0'] = rot(base_angle, 0, -1)
-        meta['outdir']['D'] = rot(base_angle, 0, -1)
-        beam_scheiben = [s1, s2]
-        hinges_extra = [('G', 0, 1)]
-        udls = [(1, rng.randint(0, 1), *rot(base_angle, 0, -q))]
-        ploads = [('G', *rot(base_angle, 0, -P / 2))]
+        beam_scheiben = [beam]
+        hinges_extra = []
+        udls = [(0, rng.randint(0, 1), *rot(base_angle, 0, -q))]
+        ploads = []
 
     # ---- truss block at the connection node -------------------------
     tangle = (base_angle + 270 + truss_extra) % 360   # default hang "down"
