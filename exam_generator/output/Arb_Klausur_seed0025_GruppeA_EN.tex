@@ -1,0 +1,84 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}
+\usepackage[english]{babel}\usepackage{lmodern}\usepackage{microtype}
+\usepackage{amsmath,amssymb}\usepackage{geometry}
+\geometry{a4paper,left=2.2cm,right=2.2cm,top=2.0cm,bottom=2.0cm}
+\usepackage{booktabs,array}\usepackage{xcolor}
+\definecolor{bokug}{RGB}{0,135,60}\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
+\usepackage{fancyhdr}\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{enumitem}\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}
+
+\begin{document}
+\fancyhead[L]{\small VU Mechanik – LAWI 100515 (PI)}\fancyhead[R]{\small SS 2026}\fancyfoot[C]{\thepage}
+\begin{center}{\large\bfseries\color{bokug}University of Natural Resources and Life Sciences, Vienna (BOKU)}\\[2pt]{\large\bfseries VU Mechanik – LAWI 100515 (PI)}\\[4pt]Exam \textbf{Group A} \hfill Date: 26.06.2026\\[2pt]\rule{\linewidth}{0.4pt}\end{center}
+
+\textbf{Given system}\par The planar system consists of bending beams and a truss connected by hinges.
+\begin{center}
+\begin{tikzpicture}[scale=0.756,>=Stealth,line join=round]
+  \coordinate (P0) at (0.000,0.000);
+  \coordinate (K) at (0.000,3.000);
+  \coordinate (C) at (3.000,3.000);
+  \coordinate (TO1) at (3.000,5.000);
+  \coordinate (TO2) at (3.000,7.000);
+  \coordinate (TU0) at (5.000,4.000);
+  \coordinate (TU1) at (5.000,6.000);
+  \draw[thick] (C) -- (TO1);
+  \draw[thick] (TO1) -- (TO2);
+  \draw[thick] (TU0) -- (TU1);
+  \draw[thick] (C) -- (TU0);
+  \draw[thick] (TU0) -- (TO1);
+  \draw[thick] (TO1) -- (TU1);
+  \draw[thick] (TU1) -- (TO2);
+  \draw[line width=2.2pt] (P0) -- (K);
+  \draw[line width=2.2pt] (K) -- (C);
+  \fill (C) circle (1.6pt);
+  \fill (TO1) circle (1.6pt);
+  \fill (TO2) circle (1.6pt);
+  \fill (TU0) circle (1.6pt);
+  \fill (TU1) circle (1.6pt);
+  \draw[fill=white,line width=1pt] (C) circle (3.2pt);
+  \draw[line width=1.1pt] (-0.450,0.000) -- (0.450,0.000);
+  \draw[line width=0.6pt] (-0.400,0.000) -- (-0.520,-0.160);
+  \draw[line width=0.6pt] (-0.200,0.000) -- (-0.320,-0.160);
+  \draw[line width=0.6pt] (0.000,0.000) -- (-0.120,-0.160);
+  \draw[line width=0.6pt] (0.200,0.000) -- (0.080,-0.160);
+  \draw[line width=0.6pt] (0.400,0.000) -- (0.280,-0.160);
+  \draw[thick] (3.000,7.000) -- (2.640,7.260) -- (2.640,6.740) -- cycle;
+  \draw[thick] (2.540,7.160) circle (0.06) (2.540,6.840) circle (0.06);
+  \draw[line width=1pt] (2.460,7.420) -- (2.460,6.580);
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.000,4.000) {1};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.000,6.000) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (5.000,5.000) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.000,3.500) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.000,4.500) {5};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.000,5.500) {6};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.000,6.500) {7};
+  \draw[->,blue!70!black] (0.000,3.620) -- (0.000,3.060);
+  \draw[->,blue!70!black] (0.500,3.620) -- (0.500,3.060);
+  \draw[->,blue!70!black] (1.000,3.620) -- (1.000,3.060);
+  \draw[->,blue!70!black] (1.500,3.620) -- (1.500,3.060);
+  \draw[->,blue!70!black] (2.000,3.620) -- (2.000,3.060);
+  \draw[->,blue!70!black] (2.500,3.620) -- (2.500,3.060);
+  \draw[->,blue!70!black] (3.000,3.620) -- (3.000,3.060);
+  \draw[blue!70!black,thick] (0.000,3.620) -- (3.000,3.620);
+  \node[blue!70!black] at (1.500,3.870) {$q$};
+  \draw[->,red!80!black,line width=1.1pt] (4.553,4.838) -- (5.000,4.000);
+  \node[red!80!black] at (4.468,4.997) {$P$};
+  \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
+  \node[font=\small] at (0.000,3.000) [xshift=-7pt,yshift=7pt] {$K$};
+  \node[font=\small] at (3.000,3.000) [xshift=-7pt,yshift=7pt] {$C$};
+  \node[font=\small] at (3.000,7.000) [xshift=-7pt,yshift=7pt] {$B$};
+\end{tikzpicture}
+\end{center}
+\textbf{Given quantities:}\quad $a=3$\,m\quad $\ell=2$\,m\quad $h=2$\,m\quad $q=3$\,kN/m\quad $P=15$\,kN
+\par\medskip
+\textbf{Tasks}\par
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Determine the degree of static determinacy.
+  \item Compute all support reactions and hinge forces.
+  \item Determine all truss member forces (tension/compression).
+  \item Draw the section forces $N$, $V$, $M$ of the bending beams.
+\end{enumerate}
+\end{document}
