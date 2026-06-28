@@ -164,7 +164,7 @@ def _build_template(tmpl, rng):
     truss_extra = rng.choice([0, 180])
     nodes = {}
     meta = dict(outdir={}, given=[], q=q, P=P, a=a, shape=shape, p=p, h=h,
-                base_angle=base_angle, truss_extra=truss_extra)
+                base_angle=base_angle, truss_extra=truss_extra, half_joint=False)
 
     def place(name, lx, ly):
         gx, gy = rot(base_angle, lx, ly)
@@ -185,6 +185,7 @@ def _build_template(tmpl, rng):
         hinges_extra = []
         udls = [(0, rng.randint(0, 1), *rot(base_angle, 0, -q))]
         ploads = []
+        meta['half_joint'] = True            # truss pins to the continuous beam
 
     elif tmpl == 'lframe':
         # L-frame: vertical leg P0->K, horizontal leg K->C ; truss at C
@@ -199,17 +200,28 @@ def _build_template(tmpl, rng):
         udls = [(0, 1, *rot(base_angle, 0, -q))]    # UDL on horizontal leg
         ploads = []
 
-    else:  # endspan: straight cantilever beam P0(fixed)--P1--P2, truss at the end P2
+    else:  # endspan: straight cantilever beam P0(fixed)--P1--P2
         place('P0', 0, 0); place('P1', a, 0); place('P2', 2 * a, 0)
         beam = ft.Scheibe('beam', path=['P0', 'P1', 'P2'],
                           nodes=['P0', 'P1', 'P2'])
-        conn = 'P2'
         supports = [ft.Support('P0', 'fixed')]
         meta['outdir']['P0'] = rot(base_angle, 0, -1)
         beam_scheiben = [beam]
         hinges_extra = []
-        udls = [(0, rng.randint(0, 1), *rot(base_angle, 0, -q))]
-        ploads = []
+        if rng.random() < 0.5:
+            # HALF JOINT: truss pins to the CONTINUOUS beam at interior P1,
+            # the beam runs on to a free tip P2 with a point load
+            #  ->  bending moment is NOT zero at the connection.
+            conn = 'P1'
+            udls = [(0, 0, *rot(base_angle, 0, -q))]
+            ploads = [('P2', *rot(base_angle, 0, -P))]
+            meta['half_joint'] = True
+        else:
+            # full hinge at the free beam end P2  (moment = 0 there)
+            conn = 'P2'
+            udls = [(0, rng.randint(0, 1), *rot(base_angle, 0, -q))]
+            ploads = []
+            meta['half_joint'] = False
 
     # ---- truss block at the connection node -------------------------
     tangle = (base_angle + 270 + truss_extra) % 360   # default hang "down"

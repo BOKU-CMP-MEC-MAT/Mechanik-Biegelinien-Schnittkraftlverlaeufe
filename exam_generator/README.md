@@ -17,8 +17,16 @@ and loads:
   middle via a half joint** (Gelenk), pin + roller supports;
 * **`lframe`** – two beam segments meeting at a rigid **90° corner**
   (a frame), fixed support + end truss;
-* **`endspan`** – a straight cantilever beam fixed at one end with the
-  truss at the other end.
+* **`endspan`** – a cantilever beam fixed at one end; the truss connects
+  either at the **free end** (full hinge → `M = 0` there) or, as a
+  **half joint**, at an interior point with the beam continuing to a
+  loaded free tip (→ `M ≠ 0` at the connection).
+
+**Half joint vs. full hinge.** When the truss pins to a *continuous*
+beam (`midspan`, and the half-joint `endspan`), the beam carries moment
+through the connection, so the bending moment there is **non-zero**.
+When the truss pins to a beam *end* (`lframe`, full-hinge `endspan`),
+the moment is zero at that node.
 
 Every system has **exactly two Scheiben** (one beam body + one truss),
 joined by a single hinge, so it is statically determinate by
