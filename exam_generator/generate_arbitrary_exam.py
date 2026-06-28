@@ -74,15 +74,18 @@ def truss_block(prefix, conn_name, conn_xy, angle, shape, p, h):
 
     new_nodes, bars = {}, []
     if shape == 'panel5':
-        top = [conn_name, f"{prefix}O1"]
-        bot = [f"{prefix}U0", f"{prefix}U1"]
-        new_nodes[top[1]] = G(p, 0)
-        new_nodes[bot[0]] = G(0, -h)
-        new_nodes[bot[1]] = G(p, -h)
-        bars = [(top[0], top[1]), (bot[0], bot[1]),
-                (top[0], bot[0]), (top[1], bot[1]), (bot[0], top[1])]
-        roller = top[1]
-        load_nodes = [bot[0]]            # U0 engages the diagonal
+        # symmetric lens/diamond (two triangles), connection at the LEFT
+        # apex, roller at the RIGHT apex.  Both edges leave the connection
+        # diagonally, so the truss extends cleanly perpendicular to the beam
+        # without any member lying on the beam axis.
+        o1, u0, r = f"{prefix}O1", f"{prefix}U0", f"{prefix}O2"
+        new_nodes[o1] = G(p, h / 2)            # upper middle
+        new_nodes[u0] = G(p, -h / 2)           # lower middle
+        new_nodes[r] = G(2 * p, 0)             # right apex (roller)
+        bars = [(conn_name, o1), (conn_name, u0),
+                (o1, r), (u0, r), (o1, u0)]
+        roller = r
+        load_nodes = [u0, o1]
     else:  # warren7
         top = [conn_name, f"{prefix}O1", f"{prefix}O2"]
         bot = [f"{prefix}U0", f"{prefix}U1"]
@@ -100,7 +103,7 @@ def truss_block(prefix, conn_name, conn_xy, angle, shape, p, h):
     all_nodes = [conn_name] + list(new_nodes.keys())
     return dict(new_nodes=new_nodes, bars=bars, roller=roller,
                 roller_normal=roller_normal, bottom=load_nodes,
-                nodes=all_nodes, top=top)
+                nodes=all_nodes)
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -156,7 +159,9 @@ def _build_template(tmpl, rng):
     P = float(rng.choice([10, 12, 15, 20]))
     shape, p, h = _truss_params(rng)
     base_angle = rng.choice([0, 90, 180, 270])     # whole-system orientation
-    truss_extra = rng.choice([0, 90, 180, 270])    # truss rotated vs beam
+    # truss always extends PERPENDICULAR to the beam (one of the two sides),
+    # so no truss member ever lies on the beam axis.
+    truss_extra = rng.choice([0, 180])
     nodes = {}
     meta = dict(outdir={}, given=[], q=q, P=P, a=a, shape=shape, p=p, h=h,
                 base_angle=base_angle, truss_extra=truss_extra)

@@ -20,10 +20,10 @@
   \coordinate (P0) at (0.000,0.000);
   \coordinate (P1) at (3.000,0.000);
   \coordinate (P2) at (6.000,0.000);
-  \coordinate (TO1) at (1.500,0.000);
-  \coordinate (TO2) at (0.000,0.000);
-  \coordinate (TU0) at (2.250,1.500);
-  \coordinate (TU1) at (0.750,1.500);
+  \coordinate (TO1) at (3.000,1.500);
+  \coordinate (TO2) at (3.000,3.000);
+  \coordinate (TU0) at (4.500,0.750);
+  \coordinate (TU1) at (4.500,2.250);
   \draw[thick] (P1) -- (TO1);
   \draw[thick] (TO1) -- (TO2);
   \draw[thick] (TU0) -- (TU1);
@@ -48,16 +48,16 @@
   \draw[thick] (6.000,0.000) -- (5.740,-0.360) -- (6.260,-0.360) -- cycle;
   \draw[thick] (5.840,-0.460) circle (0.06) (6.160,-0.460) circle (0.06);
   \draw[line width=1pt] (5.580,-0.540) -- (6.420,-0.540);
-  \draw[thick] (0.000,0.000) -- (0.260,0.360) -- (-0.260,0.360) -- cycle;
-  \draw[thick] (0.160,0.460) circle (0.06) (-0.160,0.460) circle (0.06);
-  \draw[line width=1pt] (0.420,0.540) -- (-0.420,0.540);
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.250,0.000) {1};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.750,0.000) {2};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.500,1.500) {3};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.625,0.750) {4};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.875,0.750) {5};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.125,0.750) {6};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.375,0.750) {7};
+  \draw[thick] (3.000,3.000) -- (2.640,3.260) -- (2.640,2.740) -- cycle;
+  \draw[thick] (2.540,3.160) circle (0.06) (2.540,2.840) circle (0.06);
+  \draw[line width=1pt] (2.460,3.420) -- (2.460,2.580);
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.000,0.750) {1};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.000,2.250) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.500,1.500) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.750,0.375) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.750,1.125) {5};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.750,1.875) {6};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.750,2.625) {7};
   \draw[->,blue!70!black] (3.000,0.620) -- (3.000,0.060);
   \draw[->,blue!70!black] (3.500,0.620) -- (3.500,0.060);
   \draw[->,blue!70!black] (4.000,0.620) -- (4.000,0.060);
@@ -67,12 +67,12 @@
   \draw[->,blue!70!black] (6.000,0.620) -- (6.000,0.060);
   \draw[blue!70!black,thick] (3.000,0.620) -- (6.000,0.620);
   \node[blue!70!black] at (4.500,0.870) {$q$};
-  \draw[->,red!80!black,line width=1.1pt] (1.897,2.382) -- (2.250,1.500);
-  \node[red!80!black] at (1.830,2.549) {$P$};
+  \draw[->,red!80!black,line width=1.1pt] (4.147,1.632) -- (4.500,0.750);
+  \node[red!80!black] at (4.080,1.799) {$P$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (3.000,0.000) [xshift=-7pt,yshift=7pt] {$C$};
   \node[font=\small] at (6.000,0.000) [xshift=-7pt,yshift=7pt] {$D$};
-  \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$B$};
+  \node[font=\small] at (3.000,3.000) [xshift=-7pt,yshift=7pt] {$B$};
 \end{tikzpicture}
 \end{center}
 \textbf{Given quantities:}\quad $a=3$\,m\quad $\ell=1,5$\,m\quad $h=1,5$\,m\quad $q=4$\,kN/m\quad $P=20$\,kN
