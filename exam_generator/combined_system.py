@@ -65,11 +65,26 @@ class System:
     panel: float = 2.0
     height: float = 2.0
     beam_len: float = 4.0
+    theta: int = 0                                  # drawing rotation (0/90/180/270)
     seed: int = 0
 
     # convenience -----------------------------------------------------
     def x(self, n): return self.joints[n][0]
     def y(self, n): return self.joints[n][1]
+
+
+def rot90(theta: int, x: float, y: float):
+    """Exact rotation of a vector by a multiple of 90 degrees (CCW)."""
+    theta %= 360
+    if theta == 0:
+        return (x, y)
+    if theta == 90:
+        return (-y, x)
+    if theta == 180:
+        return (-x, -y)
+    if theta == 270:
+        return (y, -x)
+    raise ValueError("theta must be a multiple of 90")
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -79,73 +94,66 @@ def build_system(seed: int) -> System:
     rng = random.Random(seed)
 
     # --- random geometry --------------------------------------------
-    n      = rng.choice([2, 3])               # number of truss panels
-    panel  = float(rng.choice([1.5, 2.0]))    # panel length
-    height = panel                            # 45° diagonals  -> clean sqrt2 forces
+    # Warren truss with n bays  ->  (4n-1) members:
+    #     n = 1  ->  3 members (single triangle)
+    #     n = 2  ->  7 members
+    # so the truss always has at most 8 members.
+    n      = rng.choice([1, 2, 2])            # favour the richer 7-member truss
+    panel  = float(rng.choice([1.5, 2.0]))    # bay length
+    height = panel                            # 45° diagonals -> clean sqrt2 forces
     a      = float(rng.choice([3.0, 4.0, 5.0]))   # beam length A->C
+    theta  = rng.choice([0, 90, 180, 270])    # drawing orientation
 
-    # --- nodes -------------------------------------------------------
+    # --- nodes (canonical: beam horizontal A=(0,0) -- C=(a,0)) -------
     joints: Dict[str, Tuple[float, float]] = {}
     joints['A'] = (0.0, 0.0)
-    joints['C'] = (a, 0.0)                    # hinge node (top-left of truss)
+    joints['C'] = (a, 0.0)                     # hinge node = left top-chord node
 
-    # truss: parallel-chord (Pratt) truss to the right of C
+    # Warren truss to the right of C:
+    #   top chord  (y = 0):  C, O1 .. On          (n+1 nodes)
+    #   bottom chord (y=-h):  U0 .. U_{n-1}        (n nodes, at bay midpoints)
     top = ['C']
     for k in range(1, n + 1):
         name = f'O{k}'
         joints[name] = (a + k * panel, 0.0)
         top.append(name)
     bot = []
-    for k in range(0, n + 1):
+    for k in range(n):
         name = f'U{k}'
-        joints[name] = (a + k * panel, -height)
+        joints[name] = (a + (k + 0.5) * panel, -height)
         bot.append(name)
 
     bars: List[Tuple[str, str]] = []
-    # top chord
-    for k in range(n):
+    for k in range(n):                         # top chord
         bars.append((top[k], top[k + 1]))
-    # bottom chord
-    for k in range(n):
+    for k in range(n - 1):                     # bottom chord
         bars.append((bot[k], bot[k + 1]))
-    # verticals
-    for k in range(n + 1):
+    for k in range(n):                         # diagonals of each triangle
         bars.append((top[k], bot[k]))
-    # diagonals (Pratt: bottom-left -> top-right)
-    for k in range(n):
         bars.append((bot[k], top[k + 1]))
 
     # --- supports ----------------------------------------------------
     fixed  = 'A'
-    roller = bot[-1]            # roller at far bottom-right node
+    roller = top[-1]           # roller at the far right top-chord node (= B)
 
     # --- loads -------------------------------------------------------
-    # The truss is only engaged when a load sits on the TRUSS Scheibe,
-    # so we ALWAYS apply a point load at an interior bottom truss node
-    # (never the roller node, never the node directly under the hinge).
-    q = q_a = q_b = 0.0
-    point_loads: List[Tuple[str, float, float]] = []
+    # ALWAYS a continuous UDL on the beam (requirement) AND always a
+    # point load on a bottom truss node (so the truss is truly engaged).
+    q, q_a, q_b = float(rng.choice([2, 3, 4, 5, 6])), 0.0, a
 
-    interior = bot[1:-1] if n >= 2 else [bot[0]]     # U1 .. U_{n-1}
-    if not interior:                                 # n == 1 fallback
-        interior = [bot[0]]
-    node = rng.choice(interior)
+    point_loads: List[Tuple[str, float, float]] = []
+    node = rng.choice(bot)                     # a bottom (loaded) truss node
     P    = float(rng.choice([10, 12, 15, 20]))
     Hx   = 0.0
-    if rng.random() < 0.35:                          # sometimes inclined -> N != 0
+    if rng.random() < 0.35:                    # sometimes inclined -> N != 0
         Hx = float(rng.choice([5, 8, 10]))
-    point_loads.append((node, Hx, -P))               # (Fx, Fy)
-
-    # optionally an additional UDL on the beam (downward)
-    if rng.random() < 0.6:
-        q   = float(rng.choice([2, 3, 4, 5, 6]))
-        q_a = 0.0
-        q_b = a                                       # full-span UDL on the beam
+    point_loads.append((node, Hx, -P))         # (Fx, Fy)
 
     return System(joints=joints, bars=bars, beam_nodes=['A', 'C'],
                   hinge='C', fixed=fixed, roller=roller,
                   q=q, q_a=q_a, q_b=q_b, point_loads=point_loads,
-                  n_panels=n, panel=panel, height=height, beam_len=a, seed=seed)
+                  n_panels=n, panel=panel, height=height, beam_len=a,
+                  theta=theta, seed=seed)
 
 
 # ════════════════════════════════════════════════════════════════════

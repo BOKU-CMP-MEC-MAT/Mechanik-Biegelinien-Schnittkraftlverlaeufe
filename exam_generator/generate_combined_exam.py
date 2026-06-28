@@ -68,7 +68,8 @@ def tikz_system(sys: cs.System, show_numbers: bool = True) -> str:
     lab = member_labels(sys)
     L: list[str] = []
     L.append(r"\begin{center}")
-    L.append(r"\begin{tikzpicture}[scale=1.15, >=Stealth, line join=round]")
+    L.append(rf"\begin{{tikzpicture}}[scale=1.15, rotate={sys.theta}, "
+             r">=Stealth, line join=round]")
 
     # coordinates
     for name, (x, y) in J.items():
@@ -143,12 +144,14 @@ def tikz_system(sys: cs.System, show_numbers: bool = True) -> str:
     L.append(rf"  \node[above left=1pt] at (A) {{$A$}};")
     L.append(rf"  \node[above=4pt] at (C) {{$C$}};")
     for name in J:
-        if name.startswith('O'):
+        if name in ('A', 'C'):
+            continue
+        if name == sys.roller:
+            L.append(rf"  \node[above right=2pt] at ({name}) {{$B$}};")
+        elif name.startswith('O'):
             L.append(rf"  \node[above=2pt] at ({name}) {{${name[0]}_{{{name[1:]}}}$}};")
         elif name.startswith('U'):
-            place = 'below right' if name == sys.roller else 'below'
-            tag = 'B' if name == sys.roller else f"{name[0]}_{{{name[1:]}}}"
-            L.append(rf"  \node[{place}=2pt] at ({name}) {{${tag}$}};")
+            L.append(rf"  \node[below=2pt] at ({name}) {{${name[0]}_{{{name[1:]}}}$}};")
 
     # --- dimension lines ---
     dy = -H - 0.95
@@ -156,9 +159,9 @@ def tikz_system(sys: cs.System, show_numbers: bool = True) -> str:
              rf"node[midway,below,font=\footnotesize]{{$a={fnum(a)}$\,m}};")
     L.append(rf"  \draw[<->,gray] ({a:.3f},{dy:.3f}) -- ({a+sys.panel:.3f},{dy:.3f}) "
              rf"node[midway,below,font=\footnotesize]{{$\ell={fnum(sys.panel)}$\,m}};")
-    L.append(rf"  \draw[<->,gray] ({a+sys.n_panels*sys.panel+0.55:.3f},0) -- "
-             rf"({a+sys.n_panels*sys.panel+0.55:.3f},{-H:.3f}) "
-             rf"node[midway,right,font=\footnotesize]{{$h={fnum(H)}$\,m}};")
+    # height dimension placed just LEFT of C (clear of the truss & roller)
+    L.append(rf"  \draw[<->,gray] ({a-0.45:.3f},0) -- ({a-0.45:.3f},{-H:.3f}) "
+             rf"node[midway,left,font=\footnotesize]{{$h={fnum(H)}$\,m}};")
 
     L.append(r"\end{tikzpicture}")
     L.append(r"\end{center}")
@@ -170,7 +173,8 @@ def tikz_truss_solution(sys: cs.System, forces, lang: str) -> str:
     J = sys.joints
     L: list[str] = []
     L.append(r"\begin{center}")
-    L.append(r"\begin{tikzpicture}[scale=1.15, >=Stealth, line join=round]")
+    L.append(rf"\begin{{tikzpicture}}[scale=1.15, rotate={sys.theta}, "
+             r">=Stealth, line join=round]")
     for name, (x, y) in J.items():
         L.append(rf"  \coordinate ({name}) at {C(x, y)};")
     for bar in sys.bars:
@@ -395,13 +399,19 @@ def make_solution(sys, glob, truss, NF, VF, MF, lang, group, date_str, semester)
     # determinacy
     r = 3 + 1                      # fixed (3) + roller (1)
     v = 2                          # one hinge -> 2 force unknowns == 2 conditions
+    # reaction / hinge components, rotated into the drawn (theta) frame
+    th = sys.theta
+    Ax, Ay = cs.rot90(th, float(glob['Ax']), float(glob['Ay']))
+    Bx, By = cs.rot90(th, 0.0, float(glob['By']))
+    Cx, Cy = cs.rot90(th, float(glob['Cx']), float(glob['Cy']))
     react = (
-        rf"$A_x = {fnum(float(glob['Ax']), lang)}$\,kN,\quad "
-        rf"$A_y = {fnum(float(glob['Ay']), lang)}$\,kN,\quad "
+        rf"$A_x = {fnum(Ax, lang)}$\,kN,\quad "
+        rf"$A_y = {fnum(Ay, lang)}$\,kN,\quad "
         rf"$M_A = {fnum(float(glob['MA']), lang)}$\,kNm,\quad "
-        rf"$B_y = {fnum(float(glob['By']), lang)}$\,kN")
-    hinge = (rf"$C_x = {fnum(float(glob['Cx']), lang)}$\,kN,\quad "
-             rf"$C_y = {fnum(float(glob['Cy']), lang)}$\,kN")
+        rf"$B_x = {fnum(Bx, lang)}$\,kN,\quad "
+        rf"$B_y = {fnum(By, lang)}$\,kN")
+    hinge = (rf"$C_x = {fnum(Cx, lang)}$\,kN,\quad "
+             rf"$C_y = {fnum(Cy, lang)}$\,kN")
     parts = [preamble(lang), r"\begin{document}",
              header_block(t, group, date_str, semester),
              rf"\begin{{center}}\textbf{{\large {t['sol']}}}\end{{center}}",
@@ -485,7 +495,8 @@ def main() -> None:
 
     print("=" * 60)
     print(f"  Combined beam+truss exam | seed {args.seed} | group {args.group}")
-    print(f"  n_panels={sys.n_panels}  a={sys.beam_len}  l={sys.panel}  h={sys.height}")
+    print(f"  bays={sys.n_panels} ({len(sys.bars)} members)  a={sys.beam_len}  "
+          f"l={sys.panel}  h={sys.height}  rotation={sys.theta} deg")
     print(f"  q={sys.q}  point_loads={sys.point_loads}")
     print(f"  A=({fnum(float(glob['Ax']))},{fnum(float(glob['Ay']))})  "
           f"M_A={fnum(float(glob['MA']))}  B_y={fnum(float(glob['By']))}")

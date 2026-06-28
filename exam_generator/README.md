@@ -12,10 +12,18 @@ at `A`, hinge at `C`) and a **pin-jointed truss** (roller support at `B`).
 
 What is randomised per seed:
 
-* truss size — **2 or 3 panels** (9 or 13 members),
-* panel length `ℓ`, truss height `h`, beam length `a`,
-* loading — a **UDL** `q` on the beam and/or a **single force** `P`
-  (sometimes inclined, with a horizontal part `H`) on a truss node.
+* **orientation** — the whole system is rotated by `0°/90°/180°/270°`,
+  so the bending beam can be horizontal or vertical,
+* truss size — a **Warren truss with 1 or 2 bays** → **3 or 7 members**
+  (always ≤ 8),
+* bay length `ℓ`, truss height `h`, beam length `a`,
+* loading — **always a continuous UDL** `q` on the beam **and** a
+  **single force** `P` (sometimes inclined, with a horizontal part `H`)
+  on a truss node.
+
+The mechanics are solved in the canonical (un-rotated) frame — which is
+rotation-invariant — and the reported reaction components are rotated
+back into the drawn orientation so figure and solution stay consistent.
 
 The system is **solved from the data, not from hard-coded formulas**
 (`combined_system.py`), so every rolled geometry is solved correctly and
