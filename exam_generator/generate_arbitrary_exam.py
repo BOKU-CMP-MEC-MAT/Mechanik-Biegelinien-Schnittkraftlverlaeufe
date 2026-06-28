@@ -318,19 +318,31 @@ def tikz_system(model, meta, with_numbers=True):
         L.append(rf"  \coordinate ({nme}) at {Cc(x, y)};")
     # truss bars
     truss = meta['truss']
+    conn = meta['conn']
+    half = meta.get('half_joint', False)
     for (i, j) in truss['bars']:
         L.append(rf"  \draw[thick] ({i}) -- ({j});")
-    # beam segments (heavy)
+    # HALF JOINT: draw the pin circle BEFORE the beam, so the beam is then
+    # drawn on top and runs through the node CONTINUOUSLY (unbroken).
+    if half:
+        L.append(rf"  \draw[fill=white,line width=0.9pt] ({conn}) circle (2.6pt);")
+    # beam segments (heavy, continuous)
     for sid in meta['beam_sids']:
         path = model.scheiben[sid].path
         for k in range(len(path) - 1):
             L.append(rf"  \draw[line width=2.2pt] ({path[k]}) -- ({path[k+1]});")
-    # truss joints
+    # truss joints (the connection node is handled by its own symbol)
     for nme in truss['nodes']:
+        if nme == conn:
+            continue
         L.append(rf"  \fill ({nme}) circle (1.6pt);")
-    # hinges (open circles)
-    for hg in model.hinges:
-        L.append(rf"  \draw[fill=white,line width=1pt] ({hg.node}) circle (3.2pt);")
+    # connection symbol
+    if half:
+        # crisp ring on top; the continuous beam visibly crosses it -> half joint
+        L.append(rf"  \draw[line width=0.9pt] ({conn}) circle (2.6pt);")
+    else:
+        # full hinge at a beam END (moment = 0 there): white-filled circle
+        L.append(rf"  \draw[fill=white,line width=1pt] ({conn}) circle (3.2pt);")
     # supports
     for sup in model.supports:
         L += _support_glyph(nodes[sup.node], sup.kind, meta['outdir'][sup.node])
