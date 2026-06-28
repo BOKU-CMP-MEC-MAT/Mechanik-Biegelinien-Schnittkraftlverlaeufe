@@ -22,9 +22,12 @@
   \coordinate (D) at (6.000,0.000);
   \coordinate (P1) at (9.000,0.000);
   \coordinate (TO1) at (7.500,0.000);
-  \coordinate (TU0) at (8.250,1.500);
+  \coordinate (TU0) at (9.000,1.500);
+  \coordinate (TU1) at (7.500,1.500);
   \draw[thick] (P1) -- (TO1);
+  \draw[thick] (TU0) -- (TU1);
   \draw[thick] (P1) -- (TU0);
+  \draw[thick] (TO1) -- (TU1);
   \draw[thick] (TU0) -- (TO1);
   \draw[line width=2.2pt] (P0) -- (G);
   \draw[line width=2.2pt] (G) -- (D);
@@ -32,6 +35,7 @@
   \fill (P1) circle (1.6pt);
   \fill (TO1) circle (1.6pt);
   \fill (TU0) circle (1.6pt);
+  \fill (TU1) circle (1.6pt);
   \draw[fill=white,line width=1pt] (P1) circle (3.2pt);
   \draw[fill=white,line width=1pt] (G) circle (3.2pt);
   \draw[line width=1.1pt] (-0.450,0.000) -- (0.450,0.000);
@@ -47,8 +51,10 @@
   \draw[thick] (7.660,0.460) circle (0.06) (7.340,0.460) circle (0.06);
   \draw[line width=1pt] (7.920,0.540) -- (7.080,0.540);
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (8.250,0.000) {1};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (8.625,0.750) {2};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (7.875,0.750) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (8.250,1.500) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (9.000,0.750) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (7.500,0.750) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (8.250,0.750) {5};
   \draw[->,blue!70!black] (6.000,0.620) -- (6.000,0.060);
   \draw[->,blue!70!black] (6.500,0.620) -- (6.500,0.060);
   \draw[->,blue!70!black] (7.000,0.620) -- (7.000,0.060);
@@ -60,8 +66,8 @@
   \node[blue!70!black] at (7.500,0.870) {$q$};
   \draw[->,red!80!black,line width=1.1pt] (3.000,0.950) -- (3.000,0.000);
   \node[red!80!black] at (3.000,1.130) {$P$};
-  \draw[->,red!80!black,line width=1.1pt] (8.250,2.450) -- (8.250,1.500);
-  \node[red!80!black] at (8.250,2.630) {$P$};
+  \draw[->,red!80!black,line width=1.1pt] (9.000,2.450) -- (9.000,1.500);
+  \node[red!80!black] at (9.000,2.630) {$P$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (3.000,0.000) [xshift=-7pt,yshift=7pt] {$G$};
   \node[font=\small] at (6.000,0.000) [xshift=-7pt,yshift=7pt] {$D$};

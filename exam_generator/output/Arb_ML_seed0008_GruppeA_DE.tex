@@ -21,15 +21,19 @@
   \coordinate (P1) at (4.000,0.000);
   \coordinate (P2) at (8.000,0.000);
   \coordinate (TO1) at (5.500,0.000);
-  \coordinate (TU0) at (4.750,-1.500);
+  \coordinate (TU0) at (4.000,-1.500);
+  \coordinate (TU1) at (5.500,-1.500);
   \draw[thick] (P1) -- (TO1);
+  \draw[thick] (TU0) -- (TU1);
   \draw[thick] (P1) -- (TU0);
+  \draw[thick] (TO1) -- (TU1);
   \draw[thick] (TU0) -- (TO1);
   \draw[line width=2.2pt] (P0) -- (P1);
   \draw[line width=2.2pt] (P1) -- (P2);
   \fill (P1) circle (1.6pt);
   \fill (TO1) circle (1.6pt);
   \fill (TU0) circle (1.6pt);
+  \fill (TU1) circle (1.6pt);
   \draw[fill=white,line width=1pt] (P1) circle (3.2pt);
   \draw[thick] (0.000,0.000) -- (-0.260,-0.420) -- (0.260,-0.420) -- cycle;
   \draw[line width=1pt] (-0.420,-0.420) -- (0.420,-0.420);
@@ -44,8 +48,10 @@
   \draw[thick] (5.340,-0.460) circle (0.06) (5.660,-0.460) circle (0.06);
   \draw[line width=1pt] (5.080,-0.540) -- (5.920,-0.540);
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.750,0.000) {1};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.375,-0.750) {2};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (5.125,-0.750) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.750,-1.500) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.000,-0.750) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (5.500,-0.750) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.750,-0.750) {5};
   \draw[->,blue!70!black] (0.000,0.620) -- (0.000,0.060);
   \draw[->,blue!70!black] (0.667,0.620) -- (0.667,0.060);
   \draw[->,blue!70!black] (1.333,0.620) -- (1.333,0.060);
@@ -55,8 +61,8 @@
   \draw[->,blue!70!black] (4.000,0.620) -- (4.000,0.060);
   \draw[blue!70!black,thick] (0.000,0.620) -- (4.000,0.620);
   \node[blue!70!black] at (2.000,0.870) {$q$};
-  \draw[->,red!80!black,line width=1.1pt] (4.750,-0.550) -- (4.750,-1.500);
-  \node[red!80!black] at (4.750,-0.370) {$P$};
+  \draw[->,red!80!black,line width=1.1pt] (4.000,-0.550) -- (4.000,-1.500);
+  \node[red!80!black] at (4.000,-0.370) {$P$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (4.000,0.000) [xshift=-7pt,yshift=7pt] {$C$};
   \node[font=\small] at (8.000,0.000) [xshift=-7pt,yshift=7pt] {$D$};
@@ -66,15 +72,17 @@
 \par\medskip\textbf{1.\ Statische Bestimmtheit}\par Abzählkriterium $n=3k-(a+z)$ (Scheiben $k$, Reaktionen $a$, Zwischenreaktionen $z$):
 \[ n=3k-(a+z)=3\cdot2-(4+2)=0\ \Rightarrow\ \text{statisch bestimmt} \]
 \par\medskip\textbf{2.\ Auflagerreaktionen und Gelenkkräfte}\par
-$A:\ R_x=0,\ R_y=18$\quad $D:\ R_x=0,\ R_y=8$\quad $B:\ R_x=0,\ R_y=6$\par $C:\ H_x=0,\ H_y=-6$
+$A:\ R_x=0,\ R_y=21$\quad $D:\ R_x=0,\ R_y=11$\quad $B:\ R_x=0,\ R_y=0$\par $C:\ H_x=0,\ H_y=-12$
 \par\medskip\textbf{3.\ Stabkräfte des Fachwerks}\par
 \begin{center}\renewcommand{\arraystretch}{1.1}\begin{tabular}{c r l}
 \toprule
 Stab & Stabkraft $S$ [kN] & Art \\
 \midrule
-  1 & -3 & Druck \\
-  2 & 6,71 & Zug \\
-  3 & 6,71 & Zug \\
+  1 & 0 & Nullstab \\
+  2 & 0 & Nullstab \\
+  3 & 12 & Zug \\
+  4 & 0 & Nullstab \\
+  5 & 0 & Nullstab \\
 \bottomrule
 \end{tabular}\end{center}
 \begin{center}
@@ -83,18 +91,24 @@ Stab & Stabkraft $S$ [kN] & Art \\
   \coordinate (P1) at (4.000,0.000);
   \coordinate (P2) at (8.000,0.000);
   \coordinate (TO1) at (5.500,0.000);
-  \coordinate (TU0) at (4.750,-1.500);
-  \draw[thick,blue!70!black] (P1) -- (TO1);
+  \coordinate (TU0) at (4.000,-1.500);
+  \coordinate (TU1) at (5.500,-1.500);
+  \draw[thick,gray] (P1) -- (TO1);
+  \draw[thick,gray] (TU0) -- (TU1);
   \draw[thick,red!75!black] (P1) -- (TU0);
-  \draw[thick,red!75!black] (TU0) -- (TO1);
+  \draw[thick,gray] (TO1) -- (TU1);
+  \draw[thick,gray] (TU0) -- (TO1);
   \draw[line width=2pt] (P0) -- (P1);
   \draw[line width=2pt] (P1) -- (P2);
   \fill (P1) circle (1.6pt);
   \fill (TO1) circle (1.6pt);
   \fill (TU0) circle (1.6pt);
+  \fill (TU1) circle (1.6pt);
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.750,0.000) {1};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.375,-0.750) {2};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (5.125,-0.750) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.750,-1.500) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.000,-0.750) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (5.500,-0.750) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (4.750,-0.750) {5};
   \node[font=\footnotesize] at (4.00,0.70) {rot: Zug $(+)$\quad blau: Druck $(-)$};
 \end{tikzpicture}
 \end{center}
@@ -102,17 +116,17 @@ Stab & Stabkraft $S$ [kN] & Art \\
 \begin{center}
 \begin{tikzpicture}[>=Stealth]
   \draw[->] (-0.2,0) -- (8.35,0) node[below right]{$s$};
-  \filldraw[fill=blue!70!black!12,draw=blue!70!black,thick] (0,0) -- plot coordinates {(0.000,0.000) (0.167,0.104) (0.333,0.203) (0.500,0.297) (0.667,0.387) (0.833,0.471) (1.000,0.550) (1.167,0.625) (1.333,0.694) (1.500,0.759) (1.667,0.819) (1.833,0.873) (2.000,0.923) (2.167,0.968) (2.333,1.008) (2.500,1.043) (2.667,1.073) (2.833,1.098) (3.000,1.118) (3.167,1.134) (3.333,1.144) (3.500,1.150) (3.667,1.150) (3.833,1.146) (4.000,1.136) (4.000,1.136) (4.167,1.089) (4.333,1.042) (4.500,0.994) (4.667,0.947) (4.833,0.899) (5.000,0.852) (5.167,0.805) (5.333,0.757) (5.500,0.710) (5.667,0.663) (5.833,0.615) (6.000,0.568) (6.167,0.521) (6.333,0.473) (6.500,0.426) (6.667,0.379) (6.833,0.331) (7.000,0.284) (7.167,0.237) (7.333,0.189) (7.500,0.142) (7.667,0.095) (7.833,0.047) (8.000,0.000)} -- (8.000,0) -- cycle;
+  \filldraw[fill=blue!70!black!12,draw=blue!70!black,thick] (0,0) -- plot coordinates {(0.000,0.000) (0.167,0.090) (0.333,0.176) (0.500,0.258) (0.667,0.337) (0.833,0.412) (1.000,0.484) (1.167,0.551) (1.333,0.616) (1.500,0.676) (1.667,0.733) (1.833,0.787) (2.000,0.836) (2.167,0.882) (2.333,0.925) (2.500,0.964) (2.667,0.999) (2.833,1.031) (3.000,1.059) (3.167,1.083) (3.333,1.104) (3.500,1.121) (3.667,1.134) (3.833,1.144) (4.000,1.150) (4.000,1.150) (4.167,1.102) (4.333,1.054) (4.500,1.006) (4.667,0.958) (4.833,0.910) (5.000,0.862) (5.167,0.815) (5.333,0.767) (5.500,0.719) (5.667,0.671) (5.833,0.623) (6.000,0.575) (6.167,0.527) (6.333,0.479) (6.500,0.431) (6.667,0.383) (6.833,0.335) (7.000,0.287) (7.167,0.240) (7.333,0.192) (7.500,0.144) (7.667,0.096) (7.833,0.048) (8.000,0.000)} -- (8.000,0) -- cycle;
   \draw[gray,dashed,thin] (4.000,-1.15) -- (4.000,1.15);
-  \node[above,blue!70!black,font=\footnotesize] at (3.667,1.150) {32,4};
+  \node[above,blue!70!black,font=\footnotesize] at (4.000,1.150) {44};
   \node[blue!70!black,right] at (8.50,0.32) {$M(s)$};
 \end{tikzpicture}\\[5pt]
 \begin{tikzpicture}[>=Stealth]
   \draw[->] (-0.2,0) -- (8.35,0) node[below right]{$s$};
-  \filldraw[fill=red!70!black!12,draw=red!70!black,thick] (0,0) -- plot coordinates {(0.000,1.150) (0.167,1.097) (0.333,1.044) (0.500,0.990) (0.667,0.937) (0.833,0.884) (1.000,0.831) (1.167,0.777) (1.333,0.724) (1.500,0.671) (1.667,0.618) (1.833,0.564) (2.000,0.511) (2.167,0.458) (2.333,0.405) (2.500,0.351) (2.667,0.298) (2.833,0.245) (3.000,0.192) (3.167,0.138) (3.333,0.085) (3.500,0.032) (3.667,-0.021) (3.833,-0.075) (4.000,-0.128) (4.000,-0.511) (4.167,-0.511) (4.333,-0.511) (4.500,-0.511) (4.667,-0.511) (4.833,-0.511) (5.000,-0.511) (5.167,-0.511) (5.333,-0.511) (5.500,-0.511) (5.667,-0.511) (5.833,-0.511) (6.000,-0.511) (6.167,-0.511) (6.333,-0.511) (6.500,-0.511) (6.667,-0.511) (6.833,-0.511) (7.000,-0.511) (7.167,-0.511) (7.333,-0.511) (7.500,-0.511) (7.667,-0.511) (7.833,-0.511) (8.000,-0.511)} -- (8.000,0) -- cycle;
+  \filldraw[fill=red!70!black!12,draw=red!70!black,thick] (0,0) -- plot coordinates {(0.000,1.150) (0.167,1.104) (0.333,1.059) (0.500,1.013) (0.667,0.967) (0.833,0.922) (1.000,0.876) (1.167,0.831) (1.333,0.785) (1.500,0.739) (1.667,0.694) (1.833,0.648) (2.000,0.602) (2.167,0.557) (2.333,0.511) (2.500,0.465) (2.667,0.420) (2.833,0.374) (3.000,0.329) (3.167,0.283) (3.333,0.237) (3.500,0.192) (3.667,0.146) (3.833,0.100) (4.000,0.055) (4.000,-0.602) (4.167,-0.602) (4.333,-0.602) (4.500,-0.602) (4.667,-0.602) (4.833,-0.602) (5.000,-0.602) (5.167,-0.602) (5.333,-0.602) (5.500,-0.602) (5.667,-0.602) (5.833,-0.602) (6.000,-0.602) (6.167,-0.602) (6.333,-0.602) (6.500,-0.602) (6.667,-0.602) (6.833,-0.602) (7.000,-0.602) (7.167,-0.602) (7.333,-0.602) (7.500,-0.602) (7.667,-0.602) (7.833,-0.602) (8.000,-0.602)} -- (8.000,0) -- cycle;
   \draw[gray,dashed,thin] (4.000,-1.15) -- (4.000,1.15);
-  \node[above,red!70!black,font=\footnotesize] at (0.000,1.150) {18};
-  \node[below,red!70!black,font=\footnotesize] at (4.000,-0.511) {-8};
+  \node[above,red!70!black,font=\footnotesize] at (0.000,1.150) {21};
+  \node[below,red!70!black,font=\footnotesize] at (4.000,-0.602) {-11};
   \node[red!70!black,right] at (8.50,0.32) {$V(s)$};
 \end{tikzpicture}\\[5pt]
 \begin{tikzpicture}[>=Stealth]

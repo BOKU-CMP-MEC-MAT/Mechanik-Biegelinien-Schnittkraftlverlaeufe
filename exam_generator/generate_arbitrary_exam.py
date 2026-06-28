@@ -56,36 +56,50 @@ def Cc(x, y):
 # ════════════════════════════════════════════════════════════════════
 #  WARREN TRUSS BLOCK  (placed & oriented arbitrarily)
 # ════════════════════════════════════════════════════════════════════
-def warren_block(prefix, conn_name, conn_xy, angle, n, p, h):
-    """Build a Warren truss (n bays, <=7 members) whose connection node
-    is `conn_name` at `conn_xy`, extending in direction `angle`."""
+def truss_block(prefix, conn_name, conn_xy, angle, shape, p, h):
+    """Build a determinate truss with 5 or 7 members whose connection
+    node is `conn_name` at `conn_xy`, extending in direction `angle`.
+
+      shape 'panel5'  -> single diagonal panel, 5 members (4 joints)
+      shape 'warren7' -> two-bay Warren truss, 7 members (5 joints)
+
+    Both expose a hinge connection node (top-left) and a roller node
+    (top-right); the truss is only ever loaded at its joints.
+    """
     ox, oy = conn_xy
-    new_nodes = {}
-    top = [conn_name]
-    for k in range(1, n + 1):
-        nm = f"{prefix}O{k}"
-        lx, ly = rot(angle, k * p, 0.0)
-        new_nodes[nm] = (ox + lx, oy + ly)
-        top.append(nm)
-    bot = []
-    for k in range(n):
-        nm = f"{prefix}U{k}"
-        lx, ly = rot(angle, (k + 0.5) * p, -h)
-        new_nodes[nm] = (ox + lx, oy + ly)
-        bot.append(nm)
-    bars = []
-    for k in range(n):
-        bars.append((top[k], top[k + 1]))
-    for k in range(n - 1):
-        bars.append((bot[k], bot[k + 1]))
-    for k in range(n):
-        bars.append((top[k], bot[k]))
-        bars.append((bot[k], top[k + 1]))
-    roller = top[-1]
-    roller_normal = rot(angle, 0.0, 1.0)         # local "up"
+
+    def G(lx, ly):                       # local -> global (rotated+placed)
+        gx, gy = rot(angle, lx, ly)
+        return (ox + gx, oy + gy)
+
+    new_nodes, bars = {}, []
+    if shape == 'panel5':
+        top = [conn_name, f"{prefix}O1"]
+        bot = [f"{prefix}U0", f"{prefix}U1"]
+        new_nodes[top[1]] = G(p, 0)
+        new_nodes[bot[0]] = G(0, -h)
+        new_nodes[bot[1]] = G(p, -h)
+        bars = [(top[0], top[1]), (bot[0], bot[1]),
+                (top[0], bot[0]), (top[1], bot[1]), (bot[0], top[1])]
+        roller = top[1]
+        load_nodes = [bot[0]]            # U0 engages the diagonal
+    else:  # warren7
+        top = [conn_name, f"{prefix}O1", f"{prefix}O2"]
+        bot = [f"{prefix}U0", f"{prefix}U1"]
+        new_nodes[top[1]] = G(p, 0)
+        new_nodes[top[2]] = G(2 * p, 0)
+        new_nodes[bot[0]] = G(0.5 * p, -h)
+        new_nodes[bot[1]] = G(1.5 * p, -h)
+        bars = [(top[0], top[1]), (top[1], top[2]), (bot[0], bot[1]),
+                (top[0], bot[0]), (bot[0], top[1]),
+                (top[1], bot[1]), (bot[1], top[2])]
+        roller = top[2]
+        load_nodes = [bot[0], bot[1]]
+
+    roller_normal = rot(angle, 0.0, 1.0)
     all_nodes = [conn_name] + list(new_nodes.keys())
     return dict(new_nodes=new_nodes, bars=bars, roller=roller,
-                roller_normal=roller_normal, bottom=bot,
+                roller_normal=roller_normal, bottom=load_nodes,
                 nodes=all_nodes, top=top)
 
 
@@ -109,22 +123,24 @@ def build_model(seed: int):
 
 
 def _truss_params(rng):
-    n = rng.choice([1, 2, 2])
+    # 5- or 7-member determinate trusses only (so both a Rundschnitt and a
+    # Ritterschnitt are always askable); the truss is never carrying a UDL.
+    shape = rng.choice(['panel5', 'warren7', 'warren7'])
     p = float(rng.choice([1.5, 2.0]))
-    return n, p, p          # height = panel -> 45-degree diagonals
+    return shape, p, p          # height = panel -> 45-degree diagonals
 
 
 def _build_template(tmpl, rng):
     a = float(rng.choice([3.0, 4.0]))      # beam segment length unit
     q = float(rng.choice([2, 3, 4, 5]))
     P = float(rng.choice([10, 12, 15, 20]))
-    n, p, h = _truss_params(rng)
+    shape, p, h = _truss_params(rng)
     # the long Gerber beam reads best horizontally; others use any orientation
     base_angle = rng.choice([0, 180]) if tmpl == 'gerber' \
         else rng.choice([0, 90, 180, 270])
     truss_extra = rng.choice([0, 90, 180, 270])    # truss rotated vs beam
     nodes = {}
-    meta = dict(outdir={}, given=[], q=q, P=P, a=a, n=n, p=p, h=h,
+    meta = dict(outdir={}, given=[], q=q, P=P, a=a, shape=shape, p=p, h=h,
                 base_angle=base_angle, truss_extra=truss_extra)
 
     def place(name, lx, ly):
@@ -176,7 +192,7 @@ def _build_template(tmpl, rng):
 
     # ---- truss block at the connection node -------------------------
     tangle = (base_angle + 270 + truss_extra) % 360   # default hang "down"
-    tb = warren_block('T', conn, nodes[conn], tangle, n, p, h)
+    tb = truss_block('T', conn, nodes[conn], tangle, shape, p, h)
     nodes.update(tb['new_nodes'])
     truss = ft.Scheibe('truss', bars=tb['bars'], nodes=tb['nodes'])
 
