@@ -1,8 +1,50 @@
 # Exam generators
 
-Two random-exam generators for **VU Mechanik – LAWI 100515 (PI)**.
-Both emit German **and** English exam sheets (`Klausur_…`) plus full
-worked solutions (`ML_…`) as `.tex` and compiled `.pdf` into `output/`.
+Random-exam generators for **VU Mechanik – LAWI 100515 (PI)**.
+They emit German **and** English exam sheets plus full worked
+solutions (`ML_…`) as `.tex` and compiled `.pdf` into `output/`.
+
+## 0. Arbitrary combined systems  (`generate_arbitrary_exam.py`)  ← newest
+
+The most general generator, built on a real **Scheiben (rigid-body)
+statics solver** (`frame_truss.py`) that solves *any* statically
+determinate assembly of beams + truss by pure equilibrium in exact
+rational arithmetic — no fixed topology. Per seed it randomly draws one
+of several structural templates and randomises geometry, orientation
+and loads:
+
+* **`midspan`** – a straight beam with the truss connected **in the
+  middle via a half joint** (Gelenk), pin + roller supports;
+* **`lframe`** – two beams meeting at a rigid **90° corner** (a frame),
+  fixed support + end truss;
+* **`gerber`** – two beam pieces **separated by an internal hinge with a
+  point force** (Gerber beam), fixed + roller + end truss.
+
+On top of the template it randomises:
+
+* the **whole-system orientation** (0/90/180/270°), and
+* the **truss orientation independently** of the beam, so the beam can be
+  horizontal while the truss points up / sideways / down;
+* a Warren truss with ≤ 8 members;
+* always ≥ 1 continuous UDL on the beams, plus point loads.
+
+Each rolled system is solved and **verified** (global equilibrium, plus
+`M = 0` at every internal hinge); unstable/indeterminate rolls are
+rejected automatically. The solution shows the determinacy count
+`n = 3k − (a + z)`, all reactions **and hinge forces**, the truss member
+table + colour-coded sketch, and `N/V/M` diagrams over the **developed
+length** of every beam (segment boundaries marked).
+
+```bash
+python generate_arbitrary_exam.py --seed 7 --group A \
+    --date 26.06.2026 --semester "SS 2026"
+# -> output/Arb_Klausur_seed0007_GruppeA_{DE,EN}.{tex,pdf}  (+ Arb_ML_…)
+python frame_truss.py        # run the solver's self-tests
+```
+
+---
+
+Two earlier, more specialised generators are also kept:
 
 ## 1. Combined beam + truss systems  (`generate_combined_exam.py`)
 

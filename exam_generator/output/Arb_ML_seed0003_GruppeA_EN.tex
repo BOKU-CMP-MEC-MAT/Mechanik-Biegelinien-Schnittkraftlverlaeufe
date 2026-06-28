@@ -1,0 +1,154 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}
+\usepackage[english]{babel}\usepackage{lmodern}\usepackage{microtype}
+\usepackage{amsmath,amssymb}\usepackage{geometry}
+\geometry{a4paper,left=2.2cm,right=2.2cm,top=2.0cm,bottom=2.0cm}
+\usepackage{booktabs,array}\usepackage{xcolor}
+\definecolor{bokug}{RGB}{0,135,60}\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
+\usepackage{fancyhdr}\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{enumitem}\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}
+
+\begin{document}
+\fancyhead[L]{\small VU Mechanik – LAWI 100515 (PI)}\fancyhead[R]{\small SS 2026}\fancyfoot[C]{\thepage}
+\begin{center}{\large\bfseries\color{bokug}University of Natural Resources and Life Sciences, Vienna (BOKU)}\\[2pt]{\large\bfseries VU Mechanik – LAWI 100515 (PI)}\\[4pt]Exam \textbf{Group A} \hfill Date: 26.06.2026\\[2pt]\rule{\linewidth}{0.4pt}\end{center}
+
+\begin{center}\textbf{\large Model solution}\end{center}
+\begin{center}
+\begin{tikzpicture}[scale=1.250,>=Stealth,line join=round]
+  \coordinate (P0) at (0.000,0.000);
+  \coordinate (P1) at (3.000,0.000);
+  \coordinate (P2) at (6.000,0.000);
+  \coordinate (TO1) at (1.500,0.000);
+  \coordinate (TO2) at (0.000,0.000);
+  \coordinate (TU0) at (2.250,1.500);
+  \coordinate (TU1) at (0.750,1.500);
+  \draw[thick] (P1) -- (TO1);
+  \draw[thick] (TO1) -- (TO2);
+  \draw[thick] (TU0) -- (TU1);
+  \draw[thick] (P1) -- (TU0);
+  \draw[thick] (TU0) -- (TO1);
+  \draw[thick] (TO1) -- (TU1);
+  \draw[thick] (TU1) -- (TO2);
+  \draw[line width=2.2pt] (P0) -- (P1);
+  \draw[line width=2.2pt] (P1) -- (P2);
+  \fill (P1) circle (1.6pt);
+  \fill (TO1) circle (1.6pt);
+  \fill (TO2) circle (1.6pt);
+  \fill (TU0) circle (1.6pt);
+  \fill (TU1) circle (1.6pt);
+  \draw[fill=white,line width=1pt] (P1) circle (3.2pt);
+  \draw[thick] (0.000,0.000) -- (-0.260,-0.420) -- (0.260,-0.420) -- cycle;
+  \draw[line width=1pt] (-0.420,-0.420) -- (0.420,-0.420);
+  \draw[line width=0.5pt] (-0.320,-0.420) -- (-0.420,-0.580);
+  \draw[line width=0.5pt] (-0.120,-0.420) -- (-0.220,-0.580);
+  \draw[line width=0.5pt] (0.080,-0.420) -- (-0.020,-0.580);
+  \draw[line width=0.5pt] (0.280,-0.420) -- (0.180,-0.580);
+  \draw[thick] (6.000,0.000) -- (5.740,-0.360) -- (6.260,-0.360) -- cycle;
+  \draw[thick] (5.840,-0.460) circle (0.06) (6.160,-0.460) circle (0.06);
+  \draw[line width=1pt] (5.580,-0.540) -- (6.420,-0.540);
+  \draw[thick] (0.000,0.000) -- (0.260,0.360) -- (-0.260,0.360) -- cycle;
+  \draw[thick] (0.160,0.460) circle (0.06) (-0.160,0.460) circle (0.06);
+  \draw[line width=1pt] (0.420,0.540) -- (-0.420,0.540);
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.250,0.000) {1};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.750,0.000) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.500,1.500) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.625,0.750) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.875,0.750) {5};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.125,0.750) {6};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.375,0.750) {7};
+  \draw[->,blue!70!black] (3.000,0.620) -- (3.000,0.060);
+  \draw[->,blue!70!black] (3.500,0.620) -- (3.500,0.060);
+  \draw[->,blue!70!black] (4.000,0.620) -- (4.000,0.060);
+  \draw[->,blue!70!black] (4.500,0.620) -- (4.500,0.060);
+  \draw[->,blue!70!black] (5.000,0.620) -- (5.000,0.060);
+  \draw[->,blue!70!black] (5.500,0.620) -- (5.500,0.060);
+  \draw[->,blue!70!black] (6.000,0.620) -- (6.000,0.060);
+  \draw[blue!70!black,thick] (3.000,0.620) -- (6.000,0.620);
+  \node[blue!70!black] at (4.500,0.870) {$q$};
+  \draw[->,red!80!black,line width=1.1pt] (1.897,2.382) -- (2.250,1.500);
+  \node[red!80!black] at (1.830,2.549) {$P$};
+  \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
+  \node[font=\small] at (3.000,0.000) [xshift=-7pt,yshift=7pt] {$C$};
+  \node[font=\small] at (6.000,0.000) [xshift=-7pt,yshift=7pt] {$D$};
+  \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$B$};
+\end{tikzpicture}
+\end{center}
+\par\medskip\textbf{1.\ Static determinacy}\par Counting criterion $n=3k-(a+z)$ (bodies $k$, reactions $a$, interaction forces $z$):
+\[ n=3k-(a+z)=3\cdot2-(4+2)=0\ \Rightarrow\ \text{statically determinate} \]
+\par\medskip\textbf{2.\ Support reactions and hinge forces}\par
+$A:\ R_x=-8,\ R_y=12.5$\quad $D:\ R_x=0,\ R_y=18.5$\quad $B:\ R_x=0,\ R_y=1$\par $C:\ H_x=8,\ H_y=-19$
+\par\medskip\textbf{3.\ Truss member forces}\par
+\begin{center}\renewcommand{\arraystretch}{1.1}\begin{tabular}{c r l}
+\toprule
+Member & Force $S$ [kN] & Type \\
+\midrule
+  1 & 1.5 & tension \\
+  2 & 0.5 & tension \\
+  3 & -1 & compression \\
+  4 & -21.24 & compression \\
+  5 & -1.12 & compression \\
+  6 & 1.12 & tension \\
+  7 & -1.12 & compression \\
+\bottomrule
+\end{tabular}\end{center}
+\begin{center}
+\begin{tikzpicture}[scale=1.250,>=Stealth,line join=round]
+  \coordinate (P0) at (0.000,0.000);
+  \coordinate (P1) at (3.000,0.000);
+  \coordinate (P2) at (6.000,0.000);
+  \coordinate (TO1) at (1.500,0.000);
+  \coordinate (TO2) at (0.000,0.000);
+  \coordinate (TU0) at (2.250,1.500);
+  \coordinate (TU1) at (0.750,1.500);
+  \draw[thick,red!75!black] (P1) -- (TO1);
+  \draw[thick,red!75!black] (TO1) -- (TO2);
+  \draw[thick,blue!70!black] (TU0) -- (TU1);
+  \draw[thick,blue!70!black] (P1) -- (TU0);
+  \draw[thick,blue!70!black] (TU0) -- (TO1);
+  \draw[thick,red!75!black] (TO1) -- (TU1);
+  \draw[thick,blue!70!black] (TU1) -- (TO2);
+  \draw[line width=2pt] (P0) -- (P1);
+  \draw[line width=2pt] (P1) -- (P2);
+  \fill (P1) circle (1.6pt);
+  \fill (TO1) circle (1.6pt);
+  \fill (TO2) circle (1.6pt);
+  \fill (TU0) circle (1.6pt);
+  \fill (TU1) circle (1.6pt);
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.250,0.000) {1};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.750,0.000) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.500,1.500) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.625,0.750) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.875,0.750) {5};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.125,0.750) {6};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.375,0.750) {7};
+  \node[font=\footnotesize] at (3.00,2.20) {red: tension $(+)$\quad blue: compression $(-)$};
+\end{tikzpicture}
+\end{center}
+\par\medskip\textbf{4.\ Section-force diagrams of the beams}\par
+\begin{center}
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (-0.2,0) -- (8.35,0) node[below right]{$s$};
+  \filldraw[fill=blue!70!black!12,draw=blue!70!black,thick] (0,0) -- plot coordinates {(0.000,0.000) (0.167,0.048) (0.333,0.096) (0.500,0.144) (0.667,0.192) (0.833,0.240) (1.000,0.287) (1.167,0.335) (1.333,0.383) (1.500,0.431) (1.667,0.479) (1.833,0.527) (2.000,0.575) (2.167,0.623) (2.333,0.671) (2.500,0.719) (2.667,0.767) (2.833,0.815) (3.000,0.862) (3.167,0.910) (3.333,0.958) (3.500,1.006) (3.667,1.054) (3.833,1.102) (4.000,1.150) (4.000,1.150) (4.167,1.124) (4.333,1.096) (4.500,1.067) (4.667,1.035) (4.833,1.001) (5.000,0.966) (5.167,0.929) (5.333,0.889) (5.500,0.848) (5.667,0.805) (5.833,0.760) (6.000,0.713) (6.167,0.664) (6.333,0.613) (6.500,0.561) (6.667,0.506) (6.833,0.449) (7.000,0.391) (7.167,0.331) (7.333,0.268) (7.500,0.204) (7.667,0.138) (7.833,0.070) (8.000,0.000)} -- (8.000,0) -- cycle;
+  \draw[gray,dashed,thin] (4.000,-1.15) -- (4.000,1.15);
+  \node[above,blue!70!black,font=\footnotesize] at (4.000,1.150) {37.5};
+  \node[blue!70!black,right] at (8.50,0.32) {$M(s)$};
+\end{tikzpicture}\\[5pt]
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (-0.2,0) -- (8.35,0) node[below right]{$s$};
+  \filldraw[fill=red!70!black!12,draw=red!70!black,thick] (0,0) -- plot coordinates {(0.000,0.777) (0.167,0.777) (0.333,0.777) (0.500,0.777) (0.667,0.777) (0.833,0.777) (1.000,0.777) (1.167,0.777) (1.333,0.777) (1.500,0.777) (1.667,0.777) (1.833,0.777) (2.000,0.777) (2.167,0.777) (2.333,0.777) (2.500,0.777) (2.667,0.777) (2.833,0.777) (3.000,0.777) (3.167,0.777) (3.333,0.777) (3.500,0.777) (3.667,0.777) (3.833,0.777) (4.000,0.777) (4.000,-0.404) (4.167,-0.435) (4.333,-0.466) (4.500,-0.497) (4.667,-0.528) (4.833,-0.559) (5.000,-0.591) (5.167,-0.622) (5.333,-0.653) (5.500,-0.684) (5.667,-0.715) (5.833,-0.746) (6.000,-0.777) (6.167,-0.808) (6.333,-0.839) (6.500,-0.870) (6.667,-0.901) (6.833,-0.932) (7.000,-0.964) (7.167,-0.995) (7.333,-1.026) (7.500,-1.057) (7.667,-1.088) (7.833,-1.119) (8.000,-1.150)} -- (8.000,0) -- cycle;
+  \draw[gray,dashed,thin] (4.000,-1.15) -- (4.000,1.15);
+  \node[above,red!70!black,font=\footnotesize] at (0.000,0.777) {12.5};
+  \node[below,red!70!black,font=\footnotesize] at (8.000,-1.150) {-18.5};
+  \node[red!70!black,right] at (8.50,0.32) {$V(s)$};
+\end{tikzpicture}\\[5pt]
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (-0.2,0) -- (8.35,0) node[below right]{$s$};
+  \filldraw[fill=green!45!black!12,draw=green!45!black,thick] (0,0) -- plot coordinates {(0.000,1.150) (0.167,1.150) (0.333,1.150) (0.500,1.150) (0.667,1.150) (0.833,1.150) (1.000,1.150) (1.167,1.150) (1.333,1.150) (1.500,1.150) (1.667,1.150) (1.833,1.150) (2.000,1.150) (2.167,1.150) (2.333,1.150) (2.500,1.150) (2.667,1.150) (2.833,1.150) (3.000,1.150) (3.167,1.150) (3.333,1.150) (3.500,1.150) (3.667,1.150) (3.833,1.150) (4.000,1.150) (4.000,0.000) (4.167,0.000) (4.333,0.000) (4.500,0.000) (4.667,0.000) (4.833,0.000) (5.000,0.000) (5.167,0.000) (5.333,0.000) (5.500,0.000) (5.667,0.000) (5.833,0.000) (6.000,0.000) (6.167,0.000) (6.333,0.000) (6.500,0.000) (6.667,0.000) (6.833,0.000) (7.000,0.000) (7.167,0.000) (7.333,0.000) (7.500,0.000) (7.667,0.000) (7.833,0.000) (8.000,0.000)} -- (8.000,0) -- cycle;
+  \draw[gray,dashed,thin] (4.000,-1.15) -- (4.000,1.15);
+  \node[above,green!45!black,font=\footnotesize] at (0.000,1.150) {8};
+  \node[green!45!black,right] at (8.50,0.32) {$N(s)$};
+\end{tikzpicture}\\[10pt]
+\end{center}
+\end{document}
