@@ -309,6 +309,20 @@ def _auto_scale(nodes, wmax=13.0, hmax=6.5):
     return max(0.5, min(1.25, wmax / max(w, 0.1), hmax / max(h, 0.1)))
 
 
+def _halfjoint_pin(nodes, conn, truss_nodes, sc):
+    """Position of the half-joint pin: offset a constant ~4pt off the beam
+    toward the truss, so the truss pins to a small circle just BELOW the
+    continuous beam (the offset is /sc so it stays constant on the page)."""
+    cx, cy = nodes[conn]
+    others = [n for n in truss_nodes if n != conn]
+    mx = sum(nodes[n][0] for n in others) / len(others)
+    my = sum(nodes[n][1] for n in others) / len(others)
+    dx, dy = mx - cx, my - cy
+    d = math.hypot(dx, dy) or 1.0
+    off = 0.14 / sc
+    return (cx + dx / d * off, cy + dy / d * off)
+
+
 def tikz_system(model, meta, with_numbers=True):
     nodes = model.nodes
     sc = _auto_scale(nodes)
@@ -316,30 +330,33 @@ def tikz_system(model, meta, with_numbers=True):
          rf"\begin{{tikzpicture}}[scale={sc:.3f},>=Stealth,line join=round]"]
     for nme, (x, y) in nodes.items():
         L.append(rf"  \coordinate ({nme}) at {Cc(x, y)};")
-    # truss bars
     truss = meta['truss']
     conn = meta['conn']
     half = meta.get('half_joint', False)
-    for (i, j) in truss['bars']:
-        L.append(rf"  \draw[thick] ({i}) -- ({j});")
-    # HALF JOINT: draw the pin circle BEFORE the beam, so the beam is then
-    # drawn on top and runs through the node CONTINUOUSLY (unbroken).
+    # For a HALF JOINT the truss pins to a small circle a little BELOW the
+    # continuous beam; the truss members start from that offset pin (CPIN).
     if half:
-        L.append(rf"  \draw[fill=white,line width=0.9pt] ({conn}) circle (2.6pt);")
-    # beam segments (heavy, continuous)
+        pin = _halfjoint_pin(nodes, conn, truss['nodes'], sc)
+        L.append(rf"  \coordinate (CPIN) at {Cc(*pin)};")
+    pin_of = lambda n: 'CPIN' if (half and n == conn) else n
+
+    # truss bars
+    for (i, j) in truss['bars']:
+        L.append(rf"  \draw[thick] ({pin_of(i)}) -- ({pin_of(j)});")
+    # beam segments (heavy, continuous through the connection)
     for sid in meta['beam_sids']:
         path = model.scheiben[sid].path
         for k in range(len(path) - 1):
             L.append(rf"  \draw[line width=2.2pt] ({path[k]}) -- ({path[k+1]});")
-    # truss joints (the connection node is handled by its own symbol)
+    # truss joints (the connection node has its own symbol)
     for nme in truss['nodes']:
         if nme == conn:
             continue
         L.append(rf"  \fill ({nme}) circle (1.6pt);")
     # connection symbol
     if half:
-        # crisp ring on top; the continuous beam visibly crosses it -> half joint
-        L.append(rf"  \draw[line width=0.9pt] ({conn}) circle (2.6pt);")
+        # half joint: hollow pin just below the (continuous) beam
+        L.append(rf"  \draw[fill=white,line width=0.9pt] (CPIN) circle (2.6pt);")
     else:
         # full hinge at a beam END (moment = 0 there): white-filled circle
         L.append(rf"  \draw[fill=white,line width=1pt] ({conn}) circle (3.2pt);")
@@ -349,8 +366,9 @@ def tikz_system(model, meta, with_numbers=True):
     # member numbers on truss
     if with_numbers:
         for bi, (i, j) in enumerate(truss['bars']):
-            mx = (nodes[i][0] + nodes[j][0]) / 2
-            my = (nodes[i][1] + nodes[j][1]) / 2
+            pi = pin if (half and i == conn) else nodes[i]
+            pj = pin if (half and j == conn) else nodes[j]
+            mx = (pi[0] + pj[0]) / 2; my = (pi[1] + pj[1]) / 2
             L.append(rf"  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,"
                      rf"font=\scriptsize] at ({mx:.3f},{my:.3f}) {{{bi+1}}};")
     # UDL arrows on beam segments
@@ -445,18 +463,29 @@ def tikz_truss_solution(model, meta, forces, lang):
          rf"\begin{{tikzpicture}}[scale={sc:.3f},>=Stealth,line join=round]"]
     for nme, (x, y) in nodes.items():
         L.append(rf"  \coordinate ({nme}) at {Cc(x, y)};")
+    conn = meta['conn']; half = meta.get('half_joint', False)
+    if half:
+        pin = _halfjoint_pin(nodes, conn, truss['nodes'], sc)
+        L.append(rf"  \coordinate (CPIN) at {Cc(*pin)};")
+    pin_of = lambda n: 'CPIN' if (half and n == conn) else n
     for (i, j) in truss['bars']:
         f = forces[(i, j)]
         col = 'red!75!black' if f > 1e-6 else ('blue!70!black' if f < -1e-6 else 'gray')
-        L.append(rf"  \draw[thick,{col}] ({i}) -- ({j});")
+        L.append(rf"  \draw[thick,{col}] ({pin_of(i)}) -- ({pin_of(j)});")
     for sid in meta['beam_sids']:
         path = model.scheiben[sid].path
         for k in range(len(path) - 1):
             L.append(rf"  \draw[line width=2pt] ({path[k]}) -- ({path[k+1]});")
     for nme in truss['nodes']:
+        if nme == conn:
+            continue
         L.append(rf"  \fill ({nme}) circle (1.6pt);")
+    if half:
+        L.append(rf"  \draw[fill=white,line width=0.9pt] (CPIN) circle (2.6pt);")
     for bi, (i, j) in enumerate(truss['bars']):
-        mx = (nodes[i][0] + nodes[j][0]) / 2; my = (nodes[i][1] + nodes[j][1]) / 2
+        pi = pin if (half and i == conn) else nodes[i]
+        pj = pin if (half and j == conn) else nodes[j]
+        mx = (pi[0] + pj[0]) / 2; my = (pi[1] + pj[1]) / 2
         L.append(rf"  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,"
                  rf"font=\scriptsize] at ({mx:.3f},{my:.3f}) {{{bi+1}}};")
     leg = ("rot: Zug $(+)$\\quad blau: Druck $(-)$" if lang == 'de'
