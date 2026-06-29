@@ -16,7 +16,7 @@
 
 \textbf{Given system}\par The planar system consists of bending beams and a truss connected by hinges.
 \begin{center}
-\begin{tikzpicture}[scale=0.778,>=Stealth,line join=round]
+\begin{tikzpicture}[scale=0.653,>=Stealth,line join=round]
   \coordinate (P0) at (0.000,0.000);
   \coordinate (P1) at (0.000,3.000);
   \coordinate (P2) at (0.000,6.000);
@@ -57,8 +57,20 @@
   \draw[->,blue!70!black] (-0.620,6.000) -- (-0.060,6.000);
   \draw[blue!70!black,thick] (-0.620,3.000) -- (-0.620,6.000);
   \node[blue!70!black] at (-0.870,4.500) {$q$};
-  \draw[->,red!80!black,line width=1.1pt] (-2.450,5.250) -- (-1.500,5.250);
-  \node[red!80!black] at (-2.630,5.250) {$P$};
+  \draw[->,red!80!black,line width=1.1pt] (-2.450,6.750) -- (-1.500,6.750);
+  \node[red!80!black] at (-2.630,6.750) {$P$};
+  \draw[thin,gray] (0.000,0.000) -- (1.200,0.000);
+  \draw[thin,gray] (0.000,3.000) -- (1.200,3.000);
+  \draw[<->,gray] (1.200,0.000) -- (1.200,3.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (0.000,3.000) -- (1.200,3.000);
+  \draw[thin,gray] (0.000,6.000) -- (1.200,6.000);
+  \draw[<->,gray] (1.200,3.000) -- (1.200,6.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (0.000,6.000) -- (0.000,7.250);
+  \draw[thin,gray] (-1.500,6.000) -- (-1.500,7.250);
+  \draw[<->,gray] (0.000,7.250) -- (-1.500,7.250) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$\ell$};
+  \draw[thin,gray] (0.000,5.250) -- (-3.500,5.250);
+  \draw[thin,gray] (0.000,6.750) -- (-3.500,6.750);
+  \draw[<->,gray] (-3.500,5.250) -- (-3.500,6.750) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$h$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (0.000,3.000) [xshift=-7pt,yshift=7pt] {$D$};
   \node[font=\small] at (0.000,6.000) [xshift=-7pt,yshift=7pt] {$C$};

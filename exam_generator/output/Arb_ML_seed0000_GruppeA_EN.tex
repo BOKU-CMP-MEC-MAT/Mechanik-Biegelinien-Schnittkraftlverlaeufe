@@ -16,7 +16,7 @@
 
 \begin{center}\textbf{\large Model solution}\end{center}
 \begin{center}
-\begin{tikzpicture}[scale=0.855,>=Stealth,line join=round]
+\begin{tikzpicture}[scale=0.707,>=Stealth,line join=round]
   \coordinate (P0) at (0.000,0.000);
   \coordinate (K) at (4.000,0.000);
   \coordinate (C) at (4.000,-4.000);
@@ -63,8 +63,20 @@
   \draw[->,blue!70!black] (4.620,-4.000) -- (4.060,-4.000);
   \draw[blue!70!black,thick] (4.620,0.000) -- (4.620,-4.000);
   \node[blue!70!black] at (4.870,-2.000) {$q$};
-  \draw[->,red!80!black,line width=1.1pt] (7.950,-6.000) -- (7.000,-6.000);
-  \node[red!80!black] at (8.130,-6.000) {$P$};
+  \draw[->,red!80!black,line width=1.1pt] (5.950,-6.000) -- (5.000,-6.000);
+  \node[red!80!black] at (6.130,-6.000) {$P$};
+  \draw[thin,gray] (0.000,0.000) -- (0.000,-1.200);
+  \draw[thin,gray] (4.000,0.000) -- (4.000,-1.200);
+  \draw[<->,gray] (0.000,-1.200) -- (4.000,-1.200) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (4.000,0.000) -- (2.800,0.000);
+  \draw[thin,gray] (4.000,-4.000) -- (2.800,-4.000);
+  \draw[<->,gray] (2.800,0.000) -- (2.800,-4.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (4.000,-4.000) -- (4.000,-6.500);
+  \draw[thin,gray] (6.000,-4.000) -- (6.000,-6.500);
+  \draw[<->,gray] (4.000,-6.500) -- (6.000,-6.500) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$\ell$};
+  \draw[thin,gray] (4.000,-4.000) -- (8.500,-4.000);
+  \draw[thin,gray] (4.000,-6.000) -- (8.500,-6.000);
+  \draw[<->,gray] (8.500,-4.000) -- (8.500,-6.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$h$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (4.000,0.000) [xshift=-7pt,yshift=7pt] {$K$};
   \node[font=\small] at (4.000,-4.000) [xshift=-7pt,yshift=7pt] {$C$};
@@ -82,7 +94,7 @@ Member & Force $S$ [kN] & Type \\
 \midrule
   1 & -11.25 & compression \\
   2 & -3.75 & compression \\
-  3 & -7.5 & compression \\
+  3 & 7.5 & tension \\
   4 & -8.39 & compression \\
   5 & 8.39 & tension \\
   6 & -8.39 & compression \\
@@ -90,7 +102,7 @@ Member & Force $S$ [kN] & Type \\
 \bottomrule
 \end{tabular}\end{center}
 \begin{center}
-\begin{tikzpicture}[scale=0.855,>=Stealth,line join=round]
+\begin{tikzpicture}[scale=0.707,>=Stealth,line join=round]
   \coordinate (P0) at (0.000,0.000);
   \coordinate (K) at (4.000,0.000);
   \coordinate (C) at (4.000,-4.000);
@@ -100,14 +112,13 @@ Member & Force $S$ [kN] & Type \\
   \coordinate (TU1) at (7.000,-6.000);
   \draw[thick,blue!70!black] (C) -- (TO1);
   \draw[thick,blue!70!black] (TO1) -- (TO2);
-  \draw[thick,blue!70!black] (TU0) -- (TU1);
+  \draw[thick,red!75!black] (TU0) -- (TU1);
   \draw[thick,blue!70!black] (C) -- (TU0);
   \draw[thick,red!75!black] (TU0) -- (TO1);
   \draw[thick,blue!70!black] (TO1) -- (TU1);
   \draw[thick,red!75!black] (TU1) -- (TO2);
   \draw[line width=2pt] (P0) -- (K);
   \draw[line width=2pt] (K) -- (C);
-  \fill (C) circle (1.6pt);
   \fill (TO1) circle (1.6pt);
   \fill (TO2) circle (1.6pt);
   \fill (TU0) circle (1.6pt);

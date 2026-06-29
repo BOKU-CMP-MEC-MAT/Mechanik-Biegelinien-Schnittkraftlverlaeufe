@@ -1,0 +1,104 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}\usepackage{lmodern}\usepackage{microtype}
+\usepackage{amsmath,amssymb}\usepackage{geometry}
+\geometry{a4paper,left=2.2cm,right=2.2cm,top=2.0cm,bottom=2.0cm}
+\usepackage{booktabs,array}\usepackage{xcolor}
+\definecolor{bokug}{RGB}{0,135,60}\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
+\usepackage{fancyhdr}\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{enumitem}\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}
+
+\begin{document}
+\fancyhead[L]{\small VU Mechanik – LAWI 100515 (PI)}\fancyhead[R]{\small SS 2026}\fancyfoot[C]{\thepage}
+\begin{center}{\large\bfseries\color{bokug}Universität für Bodenkultur Wien}\\[2pt]{\large\bfseries VU Mechanik – LAWI 100515 (PI)}\\[4pt]Prüfung \textbf{Gruppe A} \hfill Datum: 26.06.2026\\[2pt]\rule{\linewidth}{0.4pt}\end{center}
+
+\textbf{Gegebenes System}\par Das ebene System besteht aus Biegeträgern und einem Fachwerk, die durch Gelenke verbunden sind.
+\begin{center}
+\begin{tikzpicture}[scale=0.903,>=Stealth,line join=round]
+  \coordinate (P0) at (0.000,0.000);
+  \coordinate (K) at (-4.000,0.000);
+  \coordinate (C) at (-4.000,4.000);
+  \coordinate (TO1) at (-2.500,4.000);
+  \coordinate (TO2) at (-1.000,4.000);
+  \coordinate (TU0) at (-3.250,2.500);
+  \coordinate (TU1) at (-1.750,2.500);
+  \draw[thick] (C) -- (TO1);
+  \draw[thick] (TO1) -- (TO2);
+  \draw[thick] (TU0) -- (TU1);
+  \draw[thick] (C) -- (TU0);
+  \draw[thick] (TU0) -- (TO1);
+  \draw[thick] (TO1) -- (TU1);
+  \draw[thick] (TU1) -- (TO2);
+  \draw[line width=2.2pt] (P0) -- (K);
+  \draw[line width=2.2pt] (K) -- (C);
+  \fill (TO1) circle (1.6pt);
+  \fill (TO2) circle (1.6pt);
+  \fill (TU0) circle (1.6pt);
+  \fill (TU1) circle (1.6pt);
+  \draw[fill=white,line width=1pt] (C) circle (3.2pt);
+  \draw[line width=1.1pt] (0.000,0.450) -- (0.000,-0.450);
+  \draw[line width=0.6pt] (0.000,0.400) -- (-0.160,0.520);
+  \draw[line width=0.6pt] (0.000,0.200) -- (-0.160,0.320);
+  \draw[line width=0.6pt] (0.000,0.000) -- (-0.160,0.120);
+  \draw[line width=0.6pt] (0.000,-0.200) -- (-0.160,-0.080);
+  \draw[line width=0.6pt] (0.000,-0.400) -- (-0.160,-0.280);
+  \draw[thick] (-1.000,4.000) -- (-1.260,3.640) -- (-0.740,3.640) -- cycle;
+  \draw[thick] (-1.160,3.540) circle (0.06) (-0.840,3.540) circle (0.06);
+  \draw[line width=1pt] (-1.420,3.460) -- (-0.580,3.460);
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-3.250,4.000) {1};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-1.750,4.000) {2};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-2.500,2.500) {3};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-3.625,3.250) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-2.875,3.250) {5};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-2.125,3.250) {6};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-1.375,3.250) {7};
+  \draw[->,blue!70!black] (0.000,-0.620) -- (0.000,-0.060);
+  \draw[->,blue!70!black] (-0.667,-0.620) -- (-0.667,-0.060);
+  \draw[->,blue!70!black] (-1.333,-0.620) -- (-1.333,-0.060);
+  \draw[->,blue!70!black] (-2.000,-0.620) -- (-2.000,-0.060);
+  \draw[->,blue!70!black] (-2.667,-0.620) -- (-2.667,-0.060);
+  \draw[->,blue!70!black] (-3.333,-0.620) -- (-3.333,-0.060);
+  \draw[->,blue!70!black] (-4.000,-0.620) -- (-4.000,-0.060);
+  \draw[blue!70!black,thick] (0.000,-0.620) -- (-4.000,-0.620);
+  \node[blue!70!black] at (-2.000,-0.870) {$q$};
+  \draw[->,blue!70!black] (-4.620,0.000) -- (-4.060,0.000);
+  \draw[->,blue!70!black] (-4.620,0.667) -- (-4.060,0.667);
+  \draw[->,blue!70!black] (-4.620,1.333) -- (-4.060,1.333);
+  \draw[->,blue!70!black] (-4.620,2.000) -- (-4.060,2.000);
+  \draw[->,blue!70!black] (-4.620,2.667) -- (-4.060,2.667);
+  \draw[->,blue!70!black] (-4.620,3.333) -- (-4.060,3.333);
+  \draw[->,blue!70!black] (-4.620,4.000) -- (-4.060,4.000);
+  \draw[blue!70!black,thick] (-4.620,0.000) -- (-4.620,4.000);
+  \node[blue!70!black] at (-4.870,2.000) {$q$};
+  \draw[->,red!80!black,line width=1.1pt] (-4.200,2.500) -- (-3.250,2.500);
+  \node[red!80!black] at (-4.380,2.500) {$P$};
+  \draw[thin,gray] (0.000,0.000) -- (0.000,1.200);
+  \draw[thin,gray] (-4.000,0.000) -- (-4.000,1.200);
+  \draw[<->,gray] (0.000,1.200) -- (-4.000,1.200) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (-4.000,0.000) -- (-5.200,0.000);
+  \draw[thin,gray] (-4.000,4.000) -- (-5.200,4.000);
+  \draw[<->,gray] (-5.200,0.000) -- (-5.200,4.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (-4.000,4.000) -- (-4.000,2.000);
+  \draw[thin,gray] (-2.500,4.000) -- (-2.500,2.000);
+  \draw[<->,gray] (-4.000,2.000) -- (-2.500,2.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$\ell$};
+  \draw[thin,gray] (-4.000,4.000) -- (-0.500,4.000);
+  \draw[thin,gray] (-4.000,2.500) -- (-0.500,2.500);
+  \draw[<->,gray] (-0.500,4.000) -- (-0.500,2.500) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$h$};
+  \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
+  \node[font=\small] at (-4.000,0.000) [xshift=-7pt,yshift=7pt] {$K$};
+  \node[font=\small] at (-4.000,4.000) [xshift=-7pt,yshift=7pt] {$C$};
+  \node[font=\small] at (-1.000,4.000) [xshift=-7pt,yshift=7pt] {$B$};
+\end{tikzpicture}
+\end{center}
+\textbf{Gegebene Größen:}\quad $a=4$\,m\quad $\ell=1,5$\,m\quad $h=1,5$\,m\quad $q=3$\,kN/m\quad $P=12$\,kN
+\par\medskip
+\textbf{Aufgabenstellung}\par
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Bestimmen Sie den Grad der statischen Bestimmtheit.
+  \item Berechnen Sie alle Auflagerreaktionen und Gelenkkräfte.
+  \item Ermitteln Sie alle Stabkräfte des Fachwerks (Zug/Druck).
+  \item Zeichnen Sie die Schnittgrößen $N$, $V$, $M$ der Biegeträger.
+\end{enumerate}
+\end{document}

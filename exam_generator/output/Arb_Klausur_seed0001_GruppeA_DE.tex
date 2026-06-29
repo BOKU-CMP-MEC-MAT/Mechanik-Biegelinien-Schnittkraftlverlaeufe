@@ -16,7 +16,7 @@
 
 \textbf{Gegebenes System}\par Das ebene System besteht aus Biegeträgern und einem Fachwerk, die durch Gelenke verbunden sind.
 \begin{center}
-\begin{tikzpicture}[scale=0.855,>=Stealth,line join=round]
+\begin{tikzpicture}[scale=0.707,>=Stealth,line join=round]
   \coordinate (P0) at (0.000,0.000);
   \coordinate (P1) at (0.000,-3.000);
   \coordinate (P2) at (0.000,-6.000);
@@ -24,7 +24,7 @@
   \coordinate (TO2) at (4.000,-3.000);
   \coordinate (TU0) at (1.000,-5.000);
   \coordinate (TU1) at (3.000,-5.000);
-  \coordinate (CPIN) at (0.152,-3.061);
+  \coordinate (CPIN) at (0.184,-3.074);
   \draw[thick] (CPIN) -- (TO1);
   \draw[thick] (TO1) -- (TO2);
   \draw[thick] (TU0) -- (TU1);
@@ -51,10 +51,10 @@
   \draw[thick] (4.000,-3.000) -- (3.740,-3.360) -- (4.260,-3.360) -- cycle;
   \draw[thick] (3.840,-3.460) circle (0.06) (4.160,-3.460) circle (0.06);
   \draw[line width=1pt] (3.580,-3.540) -- (4.420,-3.540);
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.076,-3.030) {1};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.092,-3.037) {1};
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.000,-3.000) {2};
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.000,-5.000) {3};
-  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.576,-4.030) {4};
+  \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (0.592,-4.037) {4};
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (1.500,-4.000) {5};
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (2.500,-4.000) {6};
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (3.500,-4.000) {7};
@@ -67,8 +67,20 @@
   \draw[->,blue!70!black] (0.620,-3.000) -- (0.060,-3.000);
   \draw[blue!70!black,thick] (0.620,0.000) -- (0.620,-3.000);
   \node[blue!70!black] at (0.870,-1.500) {$q$};
-  \draw[->,red!80!black,line width=1.1pt] (1.950,-5.000) -- (1.000,-5.000);
-  \node[red!80!black] at (2.130,-5.000) {$P$};
+  \draw[->,red!80!black,line width=1.1pt] (3.742,-4.407) -- (3.000,-5.000);
+  \node[red!80!black] at (3.882,-4.294) {$P$};
+  \draw[thin,gray] (0.000,0.000) -- (-1.200,0.000);
+  \draw[thin,gray] (0.000,-3.000) -- (-1.200,-3.000);
+  \draw[<->,gray] (-1.200,0.000) -- (-1.200,-3.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (0.000,-3.000) -- (-1.200,-3.000);
+  \draw[thin,gray] (0.000,-6.000) -- (-1.200,-6.000);
+  \draw[<->,gray] (-1.200,-3.000) -- (-1.200,-6.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (0.000,-3.000) -- (0.000,-5.500);
+  \draw[thin,gray] (2.000,-3.000) -- (2.000,-5.500);
+  \draw[<->,gray] (0.000,-5.500) -- (2.000,-5.500) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$\ell$};
+  \draw[thin,gray] (0.000,-3.000) -- (4.500,-3.000);
+  \draw[thin,gray] (0.000,-5.000) -- (4.500,-5.000);
+  \draw[<->,gray] (4.500,-3.000) -- (4.500,-5.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$h$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (0.000,-3.000) [xshift=-7pt,yshift=7pt] {$C$};
   \node[font=\small] at (0.000,-6.000) [xshift=-7pt,yshift=7pt] {$D$};

@@ -16,7 +16,7 @@
 
 \textbf{Given system}\par The planar system consists of bending beams and a truss connected by hinges.
 \begin{center}
-\begin{tikzpicture}[scale=1.250,>=Stealth,line join=round]
+\begin{tikzpicture}[scale=1.048,>=Stealth,line join=round]
   \coordinate (P0) at (0.000,0.000);
   \coordinate (K) at (0.000,-3.000);
   \coordinate (C) at (-3.000,-3.000);
@@ -48,17 +48,29 @@
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-3.375,-0.750) {3};
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-2.625,-0.750) {4};
   \node[circle,fill=white,draw=gray!55,inner sep=0.5pt,font=\scriptsize] at (-3.000,-1.500) {5};
-  \draw[->,blue!70!black] (0.000,-3.620) -- (0.000,-3.060);
-  \draw[->,blue!70!black] (-0.500,-3.620) -- (-0.500,-3.060);
-  \draw[->,blue!70!black] (-1.000,-3.620) -- (-1.000,-3.060);
-  \draw[->,blue!70!black] (-1.500,-3.620) -- (-1.500,-3.060);
-  \draw[->,blue!70!black] (-2.000,-3.620) -- (-2.000,-3.060);
-  \draw[->,blue!70!black] (-2.500,-3.620) -- (-2.500,-3.060);
-  \draw[->,blue!70!black] (-3.000,-3.620) -- (-3.000,-3.060);
-  \draw[blue!70!black,thick] (0.000,-3.620) -- (-3.000,-3.620);
-  \node[blue!70!black] at (-1.500,-3.870) {$q$};
+  \draw[->,blue!70!black] (0.620,0.000) -- (0.060,0.000);
+  \draw[->,blue!70!black] (0.620,-0.500) -- (0.060,-0.500);
+  \draw[->,blue!70!black] (0.620,-1.000) -- (0.060,-1.000);
+  \draw[->,blue!70!black] (0.620,-1.500) -- (0.060,-1.500);
+  \draw[->,blue!70!black] (0.620,-2.000) -- (0.060,-2.000);
+  \draw[->,blue!70!black] (0.620,-2.500) -- (0.060,-2.500);
+  \draw[->,blue!70!black] (0.620,-3.000) -- (0.060,-3.000);
+  \draw[blue!70!black,thick] (0.620,0.000) -- (0.620,-3.000);
+  \node[blue!70!black] at (0.870,-1.500) {$q$};
   \draw[->,red!80!black,line width=1.1pt] (-1.657,-2.242) -- (-2.250,-1.500);
   \node[red!80!black] at (-1.544,-2.382) {$P$};
+  \draw[thin,gray] (0.000,0.000) -- (-1.200,0.000);
+  \draw[thin,gray] (0.000,-3.000) -- (-1.200,-3.000);
+  \draw[<->,gray] (-1.200,0.000) -- (-1.200,-3.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (0.000,-3.000) -- (0.000,-4.200);
+  \draw[thin,gray] (-3.000,-3.000) -- (-3.000,-4.200);
+  \draw[<->,gray] (0.000,-4.200) -- (-3.000,-4.200) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (-3.000,-3.000) -- (-1.750,-3.000);
+  \draw[thin,gray] (-3.000,-1.500) -- (-1.750,-1.500);
+  \draw[<->,gray] (-1.750,-3.000) -- (-1.750,-1.500) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$\ell$};
+  \draw[thin,gray] (-3.750,-3.000) -- (-3.750,0.500);
+  \draw[thin,gray] (-2.250,-3.000) -- (-2.250,0.500);
+  \draw[<->,gray] (-3.750,0.500) -- (-2.250,0.500) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$h$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (0.000,-3.000) [xshift=-7pt,yshift=7pt] {$K$};
   \node[font=\small] at (-3.000,-3.000) [xshift=-7pt,yshift=7pt] {$C$};

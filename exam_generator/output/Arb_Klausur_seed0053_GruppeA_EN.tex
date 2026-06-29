@@ -16,7 +16,7 @@
 
 \textbf{Given system}\par The planar system consists of bending beams and a truss connected by hinges.
 \begin{center}
-\begin{tikzpicture}[scale=0.855,>=Stealth,line join=round]
+\begin{tikzpicture}[scale=0.707,>=Stealth,line join=round]
   \coordinate (P0) at (0.000,0.000);
   \coordinate (P1) at (0.000,-3.000);
   \coordinate (P2) at (0.000,-6.000);
@@ -63,8 +63,29 @@
   \draw[->,blue!70!black] (0.620,-3.000) -- (0.060,-3.000);
   \draw[blue!70!black,thick] (0.620,0.000) -- (0.620,-3.000);
   \node[blue!70!black] at (0.870,-1.500) {$q$};
+  \draw[->,blue!70!black] (0.620,-3.000) -- (0.060,-3.000);
+  \draw[->,blue!70!black] (0.620,-3.500) -- (0.060,-3.500);
+  \draw[->,blue!70!black] (0.620,-4.000) -- (0.060,-4.000);
+  \draw[->,blue!70!black] (0.620,-4.500) -- (0.060,-4.500);
+  \draw[->,blue!70!black] (0.620,-5.000) -- (0.060,-5.000);
+  \draw[->,blue!70!black] (0.620,-5.500) -- (0.060,-5.500);
+  \draw[->,blue!70!black] (0.620,-6.000) -- (0.060,-6.000);
+  \draw[blue!70!black,thick] (0.620,-3.000) -- (0.620,-6.000);
+  \node[blue!70!black] at (0.870,-4.500) {$q$};
   \draw[->,red!80!black,line width=1.1pt] (-0.050,-4.000) -- (-1.000,-4.000);
   \node[red!80!black] at (0.130,-4.000) {$P$};
+  \draw[thin,gray] (0.000,0.000) -- (1.200,0.000);
+  \draw[thin,gray] (0.000,-3.000) -- (1.200,-3.000);
+  \draw[<->,gray] (1.200,0.000) -- (1.200,-3.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (0.000,-3.000) -- (1.200,-3.000);
+  \draw[thin,gray] (0.000,-6.000) -- (1.200,-6.000);
+  \draw[<->,gray] (1.200,-3.000) -- (1.200,-6.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$a$};
+  \draw[thin,gray] (0.000,-6.000) -- (0.000,-3.500);
+  \draw[thin,gray] (-2.000,-6.000) -- (-2.000,-3.500);
+  \draw[<->,gray] (0.000,-3.500) -- (-2.000,-3.500) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$\ell$};
+  \draw[thin,gray] (0.000,-6.000) -- (-4.500,-6.000);
+  \draw[thin,gray] (0.000,-4.000) -- (-4.500,-4.000);
+  \draw[<->,gray] (-4.500,-6.000) -- (-4.500,-4.000) node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{$h$};
   \node[font=\small] at (0.000,0.000) [xshift=-7pt,yshift=7pt] {$A$};
   \node[font=\small] at (0.000,-3.000) [xshift=-7pt,yshift=7pt] {$D$};
   \node[font=\small] at (0.000,-6.000) [xshift=-7pt,yshift=7pt] {$C$};

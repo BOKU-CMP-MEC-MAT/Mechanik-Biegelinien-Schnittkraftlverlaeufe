@@ -145,6 +145,22 @@ def _orient_fixed_supports(model, meta):
                 break
 
 
+def _make_udls(nodes, path, q, rng, all_prob=0.5):
+    """Distribute a UDL of intensity q over the beam: either one random
+    segment or (with prob all_prob) ALL beam segments. Each segment's load
+    is perpendicular to that segment (so it is consistent at 90° corners)."""
+    nseg = len(path) - 1
+    segs = list(range(nseg)) if rng.random() < all_prob else [rng.randrange(nseg)]
+    udls = []
+    for seg in segs:
+        ax, ay = nodes[path[seg]]; bx, by = nodes[path[seg + 1]]
+        dx, dy = bx - ax, by - ay
+        Ln = math.hypot(dx, dy) or 1.0
+        ex, ey = dx / Ln, dy / Ln
+        udls.append((0, seg, q * ey, -q * ex))   # beam = scheibe 0
+    return udls
+
+
 def _truss_params(rng):
     # 5- or 7-member determinate trusses only (so both a Rundschnitt and a
     # Ritterschnitt are always askable); the truss is never carrying a UDL.
@@ -183,7 +199,7 @@ def _build_template(tmpl, rng):
         meta['outdir']['P2'] = rot(base_angle, 0, -1)
         beam_scheiben = [beam]
         hinges_extra = []
-        udls = [(0, rng.randint(0, 1), *rot(base_angle, 0, -q))]
+        udls = _make_udls(nodes, beam.path, q, rng)
         ploads = []
         meta['half_joint'] = True            # truss pins to the continuous beam
 
@@ -197,7 +213,7 @@ def _build_template(tmpl, rng):
         meta['outdir']['P0'] = rot(base_angle, 0, -1)
         beam_scheiben = [beam]
         hinges_extra = []
-        udls = [(0, 1, *rot(base_angle, 0, -q))]    # UDL on horizontal leg
+        udls = _make_udls(nodes, beam.path, q, rng)
         ploads = []
 
     else:  # endspan: straight cantilever beam P0(fixed)--P1--P2
@@ -213,18 +229,19 @@ def _build_template(tmpl, rng):
             # the beam runs on to a free tip P2 with a point load
             #  ->  bending moment is NOT zero at the connection.
             conn = 'P1'
-            udls = [(0, 0, *rot(base_angle, 0, -q))]
+            udls = _make_udls(nodes, beam.path, q, rng)
             ploads = [('P2', *rot(base_angle, 0, -P))]
             meta['half_joint'] = True
         else:
             # full hinge at the free beam end P2  (moment = 0 there)
             conn = 'P2'
-            udls = [(0, rng.randint(0, 1), *rot(base_angle, 0, -q))]
+            udls = _make_udls(nodes, beam.path, q, rng)
             ploads = []
             meta['half_joint'] = False
 
     # ---- truss block at the connection node -------------------------
     tangle = (base_angle + 270 + truss_extra) % 360   # default hang "down"
+    meta['tangle'] = tangle
     tb = truss_block('T', conn, nodes[conn], tangle, shape, p, h)
     nodes.update(tb['new_nodes'])
     truss = ft.Scheibe('truss', bars=tb['bars'], nodes=tb['nodes'])
@@ -305,8 +322,8 @@ def _bounds(nodes):
 
 def _auto_scale(nodes, wmax=13.0, hmax=6.5):
     x0, x1, y0, y1 = _bounds(nodes)
-    w = (x1 - x0) + 1.6; h = (y1 - y0) + 1.6     # margin for glyphs/labels
-    return max(0.5, min(1.25, wmax / max(w, 0.1), hmax / max(h, 0.1)))
+    w = (x1 - x0) + 3.2; h = (y1 - y0) + 3.2     # margin for glyphs/dims/labels
+    return max(0.45, min(1.2, wmax / max(w, 0.1), hmax / max(h, 0.1)))
 
 
 def _halfjoint_pin(nodes, conn, truss_nodes, sc):
@@ -321,6 +338,55 @@ def _halfjoint_pin(nodes, conn, truss_nodes, sc):
     d = math.hypot(dx, dy) or 1.0
     off = 0.14 / sc
     return (cx + dx / d * off, cy + dy / d * off)
+
+
+def _dim(p0, p1, label, perp, amt):
+    """Dimension line between p0 and p1, offset perpendicular by perp*amt,
+    with extension lines and a centred white-backed label."""
+    a = (p0[0] + perp[0] * amt, p0[1] + perp[1] * amt)
+    b = (p1[0] + perp[0] * amt, p1[1] + perp[1] * amt)
+    return [
+        rf"  \draw[thin,gray] {Cc(*p0)} -- {Cc(*a)};",
+        rf"  \draw[thin,gray] {Cc(*p1)} -- {Cc(*b)};",
+        rf"  \draw[<->,gray] {Cc(*a)} -- {Cc(*b)} "
+        rf"node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{{{label}}};",
+    ]
+
+
+def _dimensions(model, meta):
+    """Dimension lines for the beam segment lengths (a) and the truss
+    panel (l) and height (h); follows the actual (rotated) geometry."""
+    nodes = model.nodes
+    conn = meta['conn']
+    ua = rot(meta['tangle'], 1.0, 0.0)         # truss axis
+    ud = rot(meta['tangle'], 0.0, -1.0)        # truss depth
+    L = []
+    # --- beam segments (each length a), offset on the side away from truss
+    beam = model.scheiben[0].path
+    for k in range(len(beam) - 1):
+        p0 = nodes[beam[k]]; p1 = nodes[beam[k + 1]]
+        ex, ey = p1[0] - p0[0], p1[1] - p0[1]
+        ln = math.hypot(ex, ey) or 1.0
+        ex, ey = ex / ln, ey / ln
+        n = (ey, -ex)
+        if ua[0] * n[0] + ua[1] * n[1] > 0:     # point away from the truss
+            n = (-n[0], -n[1])
+        L += _dim(p0, p1, r"$a$", n, 1.2)
+    # --- truss panel (l) and height (h) via projection onto (ua, ud)
+    cx, cy = nodes[conn]
+    projs = []
+    for nme in meta['truss']['nodes']:
+        vx, vy = nodes[nme][0] - cx, nodes[nme][1] - cy
+        projs.append((vx * ua[0] + vy * ua[1], vx * ud[0] + vy * ud[1]))
+    amax = max(a for a, _ in projs)
+    dmin = min(d for _, d in projs); dmax = max(d for _, d in projs)
+    p = meta['p']
+    s0 = (cx, cy); s1 = (cx + ua[0] * p, cy + ua[1] * p)
+    L += _dim(s0, s1, r"$\ell$", ud, dmax + 0.5)
+    h0 = (cx + ud[0] * dmin, cy + ud[1] * dmin)
+    h1 = (cx + ud[0] * dmax, cy + ud[1] * dmax)
+    L += _dim(h0, h1, r"$h$", ua, amax + 0.5)
+    return L
 
 
 def tikz_system(model, meta, with_numbers=True):
@@ -397,6 +463,8 @@ def tikz_system(model, meta, with_numbers=True):
         sx, sy = nx - ux * 0.95, ny - uy * 0.95
         L.append(rf"  \draw[->,red!80!black,line width=1.1pt] {Cc(sx, sy)} -- {Cc(nx, ny)};")
         L.append(rf"  \node[red!80!black] at {Cc(sx-ux*0.18, sy-uy*0.18)} {{$P$}};")
+    # dimension lines (a, l, h)
+    L += _dimensions(model, meta)
     # node labels
     for nme in nodes:
         lab = _node_label(nme, model, meta)
@@ -452,6 +520,85 @@ def tikz_beam_diagram(s, vals, color, title, lang, bounds):
             L.append(rf"  \node[{anch},{color},font=\footnotesize] at "
                      rf"({s[idx]*sx:.3f},{vals[idx]*sy:.3f}) {{{fnum(vals[idx],lang,1)}}};")
     L.append(rf"  \node[{color},right] at ({W+0.5:.2f},0.32) {{{title}}};")
+    L.append(r"\end{tikzpicture}")
+    return "\n".join(L)
+
+
+def tikz_beam_diagram_geom(model, meta, sid, s, vals, color, title, lang):
+    """Draw an N/V/M diagram ALONG the actual (possibly rotated / cornered)
+    beam geometry: the baseline follows the beam, the value is plotted
+    perpendicular to each segment."""
+    path = model.scheiben[sid].path
+    pts = [model.nodes[p] for p in path]
+    nseg = len(path) - 1
+    per = max(2, len(s) // nseg)
+    seg = []
+    for k in range(nseg):
+        ax, ay = pts[k]; bx, by = pts[k + 1]
+        dx, dy = bx - ax, by - ay
+        ln = math.hypot(dx, dy) or 1.0
+        seg.append((ax, ay, dx / ln, dy / ln, ln))
+    vmax = max((abs(v) for v in vals), default=0.0)
+
+    # --- the diagram baseline (always drawn) ------------------------
+    bl = " -- ".join(Cc(*p) for p in pts)
+
+    def bbox(extra):
+        xs = [p[0] for p in pts] + [p[0] for p in extra]
+        ys = [p[1] for p in pts] + [p[1] for p in extra]
+        return min(xs), max(xs), min(ys), max(ys)
+
+    def labels(L, x0, x1, y0, y1):
+        for k, p in enumerate(pts):
+            lab = _node_label(path[k], model, meta)
+            if lab:
+                L.append(rf"  \fill {Cc(*p)} circle (1.3pt);")
+                L.append(rf"  \node[font=\footnotesize] at {Cc(*p)} "
+                         rf"[xshift=-6pt,yshift=6pt] {{{lab}}};")
+        # title parked to the upper-right, clear of the beam and node labels
+        L.append(rf"  \node[{color},right] at ({x1 + 0.35:.2f},{y1 + 0.2:.2f}) {{{title}}};")
+
+    if vmax < 1e-9:
+        x0, x1, y0, y1 = bbox(pts)
+        sc = max(0.4, min(1.1, 10.0 / max(x1 - x0 + 1.4, 0.1),
+                          3.2 / max(y1 - y0 + 1.4, 0.1)))
+        L = [rf"\begin{{tikzpicture}}[scale={sc:.3f},line join=round]",
+             rf"  \draw[line width=1.6pt] {bl};",
+             rf"  \node[{color}] at ({(x0+x1)/2:.2f},{y1+0.45:.2f}) "
+             rf"{{{title}\,$\equiv 0$}};"]
+        labels(L, x0, x1, y0, y1)
+        L.append(r"\end{tikzpicture}")
+        return "\n".join(L)
+
+    voff = 1.3
+    vscale = voff / vmax
+    base, off = [], []
+    for k in range(nseg):
+        ax, ay, ex, ey, ln = seg[k]
+        nx, ny = ey, -ex                       # perpendicular to this segment
+        for j in range(per):
+            v = vals[k * per + j] if k * per + j < len(vals) else 0.0
+            tt = (j / (per - 1)) * ln
+            px, py = ax + ex * tt, ay + ey * tt
+            base.append((px, py))
+            off.append((px + v * vscale * nx, py + v * vscale * ny))
+
+    x0, x1, y0, y1 = bbox(base + off)
+    sc = max(0.4, min(1.1, 10.0 / max(x1 - x0 + 1.4, 0.1),
+                      3.4 / max(y1 - y0 + 1.4, 0.1)))
+    fwd = " -- ".join(Cc(*o) for o in off)
+    bwd = " -- ".join(Cc(*b) for b in reversed(base))
+    L = [rf"\begin{{tikzpicture}}[scale={sc:.3f},line join=round]",
+         rf"  \filldraw[fill={color}!12,draw={color},semithick] "
+         rf"{fwd} -- {bwd} -- cycle;",
+         rf"  \draw[line width=1.6pt] {bl};"]
+    imax = max(range(len(vals)), key=lambda i: vals[i])
+    imin = min(range(len(vals)), key=lambda i: vals[i])
+    for idx in {imax, imin}:
+        if abs(vals[idx]) > 1e-3 * vmax:
+            L.append(rf"  \node[{color},font=\footnotesize,fill=white,inner sep=0.5pt] "
+                     rf"at {Cc(*off[idx])} {{{fnum(vals[idx], lang, 1)}}};")
+    labels(L, x0, x1, y0, y1)
     L.append(r"\end{tikzpicture}")
     return "\n".join(L)
 
@@ -627,9 +774,9 @@ def make_solution(model, meta, lang, group, date_str, semester):
         s, N, V, M, bounds = res['beams'][sid]
         if len(meta['beam_sids']) > 1:
             parts.append(rf"\textbf{{{t['beam']} {bi+1}}}\\[2pt]")
-        parts.append(tikz_beam_diagram(s, M, cols[0], titles[0], lang, bounds) + r"\\[5pt]")
-        parts.append(tikz_beam_diagram(s, V, cols[1], titles[1], lang, bounds) + r"\\[5pt]")
-        parts.append(tikz_beam_diagram(s, N, cols[2], titles[2], lang, bounds) + r"\\[10pt]")
+        parts.append(tikz_beam_diagram_geom(model, meta, sid, s, M, cols[0], titles[0], lang) + r"\\[5pt]")
+        parts.append(tikz_beam_diagram_geom(model, meta, sid, s, V, cols[1], titles[1], lang) + r"\\[5pt]")
+        parts.append(tikz_beam_diagram_geom(model, meta, sid, s, N, cols[2], titles[2], lang) + r"\\[10pt]")
     parts += [r"\end{center}", r"\end{document}"]
     return "\n".join(parts)
 
