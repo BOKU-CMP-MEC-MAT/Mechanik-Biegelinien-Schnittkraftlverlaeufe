@@ -27,6 +27,7 @@ import argparse
 import math
 import random
 import subprocess
+from fractions import Fraction
 from pathlib import Path
 
 import frame_truss as ft
@@ -51,6 +52,14 @@ def fnum(v, lang='de', dec=2):
 
 def Cc(x, y):
     return f"({x:.3f},{y:.3f})"
+
+
+def ell_label(fr: Fraction) -> str:
+    """Length as a multiple/fraction of the base measure l:
+    1 -> $\\ell$,  2 -> $2\\ell$,  3/2 -> $3\\ell/2$,  1/2 -> $\\ell/2$."""
+    n, d = fr.numerator, fr.denominator
+    num = r"\ell" if n == 1 else rf"{n}\ell"
+    return rf"${num}$" if d == 1 else rf"${num}/{d}$"
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -170,16 +179,21 @@ def _truss_params(rng):
 
 
 def _build_template(tmpl, rng):
-    a = float(rng.choice([3.0, 4.0]))      # beam segment length unit
     q = float(rng.choice([2, 3, 4, 5]))
     P = float(rng.choice([10, 12, 15, 20]))
     shape, p, h = _truss_params(rng)
+    # all lengths are multiples of the base measure l (= truss panel p):
+    # beam segments are a = 3l/2, 2l or 3l so every dimension reads as
+    # a clean fraction/multiple of l.
+    aratio = rng.choice([Fraction(3, 2), Fraction(2), Fraction(3)])
+    a = float(aratio) * p                  # beam segment length unit
     base_angle = rng.choice([0, 90, 180, 270])     # whole-system orientation
     # truss always extends PERPENDICULAR to the beam (one of the two sides),
     # so no truss member ever lies on the beam axis.
     truss_extra = rng.choice([0, 180])
     nodes = {}
-    meta = dict(outdir={}, given=[], q=q, P=P, a=a, shape=shape, p=p, h=h,
+    meta = dict(outdir={}, given=[], q=q, P=P, a=a, aratio=aratio,
+                shape=shape, p=p, h=h,
                 base_angle=base_angle, truss_extra=truss_extra, half_joint=False)
 
     def place(name, lx, ly):
@@ -271,8 +285,7 @@ def _build_template(tmpl, rng):
 
     meta.update(beam_sids=list(range(n_beam)), truss_sid=truss_sid,
                 conn=conn, roller=tb['roller'], truss=tb,
-                given=[rf"$a={fnum(a)}$\,m", rf"$\ell={fnum(p)}$\,m",
-                       rf"$h={fnum(h)}$\,m", rf"$q={fnum(q)}$\,kN/m",
+                given=[rf"$\ell={fnum(p)}$\,m", rf"$q={fnum(q)}$\,kN/m",
                        rf"$P={fnum(P)}$\,kN"])
     return model, meta
 
@@ -322,7 +335,7 @@ def _bounds(nodes):
 
 def _auto_scale(nodes, wmax=13.0, hmax=6.5):
     x0, x1, y0, y1 = _bounds(nodes)
-    w = (x1 - x0) + 3.2; h = (y1 - y0) + 3.2     # margin for glyphs/dims/labels
+    w = (x1 - x0) + 4.4; h = (y1 - y0) + 4.4     # margin for glyphs/dims/labels
     return max(0.45, min(1.2, wmax / max(w, 0.1), hmax / max(h, 0.1)))
 
 
@@ -342,12 +355,21 @@ def _halfjoint_pin(nodes, conn, truss_nodes, sc):
 
 def _dim(p0, p1, label, perp, amt):
     """Dimension line between p0 and p1, offset perpendicular by perp*amt,
-    with extension lines and a centred white-backed label."""
+    with a centred white-backed label. The extension lines are short
+    fixed-length ticks around the dimension line (architecture-plan
+    style) — they do NOT run all the way back to the structure."""
     a = (p0[0] + perp[0] * amt, p0[1] + perp[1] * amt)
     b = (p1[0] + perp[0] * amt, p1[1] + perp[1] * amt)
+    ext_in, ext_out = 0.28, 0.12       # tick: toward structure / past the line
+
+    def _tick(pt):
+        s = (pt[0] - perp[0] * ext_in,  pt[1] - perp[1] * ext_in)
+        e = (pt[0] + perp[0] * ext_out, pt[1] + perp[1] * ext_out)
+        return rf"  \draw[thin,gray] {Cc(*s)} -- {Cc(*e)};"
+
     return [
-        rf"  \draw[thin,gray] {Cc(*p0)} -- {Cc(*a)};",
-        rf"  \draw[thin,gray] {Cc(*p1)} -- {Cc(*b)};",
+        _tick(a),
+        _tick(b),
         rf"  \draw[<->,gray] {Cc(*a)} -- {Cc(*b)} "
         rf"node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]{{{label}}};",
     ]
@@ -355,11 +377,24 @@ def _dim(p0, p1, label, perp, amt):
 
 def _dimensions(model, meta):
     """Dimension lines for the beam segment lengths (a) and the truss
-    panel (l) and height (h); follows the actual (rotated) geometry."""
+    panel (l) and height (h); follows the actual (rotated) geometry.
+    Every dimension line is pushed clear OUTSIDE the whole system: the
+    offset is measured against the extent of ALL nodes in the offset
+    direction plus a margin that also clears load arrows, labels and
+    support glyphs (~1.5 drawing units)."""
     nodes = model.nodes
     conn = meta['conn']
     ua = rot(meta['tangle'], 1.0, 0.0)         # truss axis
     ud = rot(meta['tangle'], 0.0, -1.0)        # truss depth
+    allpts = list(nodes.values())
+    MARGIN = 1.5
+
+    def _clearance(origin, n):
+        """Largest projection of any node onto direction n, measured
+        from origin — i.e. how far the system extends that way."""
+        return max((p[0] - origin[0]) * n[0] + (p[1] - origin[1]) * n[1]
+                   for p in allpts)
+
     L = []
     # --- beam segments (each length a), offset on the side away from truss
     beam = model.scheiben[0].path
@@ -371,21 +406,22 @@ def _dimensions(model, meta):
         n = (ey, -ex)
         if ua[0] * n[0] + ua[1] * n[1] > 0:     # point away from the truss
             n = (-n[0], -n[1])
-        L += _dim(p0, p1, r"$a$", n, 1.2)
+        L += _dim(p0, p1, ell_label(meta['aratio']), n,
+                  _clearance(p0, n) + MARGIN)
     # --- truss panel (l) and height (h) via projection onto (ua, ud)
     cx, cy = nodes[conn]
     projs = []
     for nme in meta['truss']['nodes']:
         vx, vy = nodes[nme][0] - cx, nodes[nme][1] - cy
         projs.append((vx * ua[0] + vy * ua[1], vx * ud[0] + vy * ud[1]))
-    amax = max(a for a, _ in projs)
     dmin = min(d for _, d in projs); dmax = max(d for _, d in projs)
     p = meta['p']
     s0 = (cx, cy); s1 = (cx + ua[0] * p, cy + ua[1] * p)
-    L += _dim(s0, s1, r"$\ell$", ud, dmax + 0.5)
+    L += _dim(s0, s1, r"$\ell$", ud, _clearance(s0, ud) + MARGIN)
     h0 = (cx + ud[0] * dmin, cy + ud[1] * dmin)
     h1 = (cx + ud[0] * dmax, cy + ud[1] * dmax)
-    L += _dim(h0, h1, r"$h$", ua, amax + 0.5)
+    hratio = Fraction(meta['h'] / meta['p']).limit_denominator(12)
+    L += _dim(h0, h1, ell_label(hratio), ua, _clearance(h0, ua) + MARGIN)
     return L
 
 
@@ -663,76 +699,304 @@ def truss_table(model, meta, forces, lang):
 # ════════════════════════════════════════════════════════════════════
 #  LATEX DOCUMENT
 # ════════════════════════════════════════════════════════════════════
-def preamble(lang):
+def preamble(lang, sans=False):
+    """LaTeX preamble; sans=True gives the Word-like sans-serif look of
+    the exam sheet (Angabe), serif is used for the Musterlösung."""
     babel = 'ngerman' if lang == 'de' else 'english'
+    font = (r"\usepackage{helvet}\renewcommand{\familydefault}{\sfdefault}" "\n"
+            if sans else r"\usepackage{lmodern}" "\n")
     return (
         r"\documentclass[a4paper,11pt]{article}" "\n"
         r"\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}" "\n"
-        rf"\usepackage[{babel}]{{babel}}\usepackage{{lmodern}}\usepackage{{microtype}}" "\n"
+        rf"\usepackage[{babel}]{{babel}}\usepackage{{microtype}}" "\n"
+        + font +
         r"\usepackage{amsmath,amssymb}\usepackage{geometry}" "\n"
-        r"\geometry{a4paper,left=2.2cm,right=2.2cm,top=2.0cm,bottom=2.0cm}" "\n"
-        r"\usepackage{booktabs,array}\usepackage{xcolor}" "\n"
+        r"\geometry{a4paper,left=2.2cm,right=2.2cm,top=2.8cm,bottom=2.4cm,"
+        r"headheight=34pt}" "\n"
+        r"\usepackage{booktabs,array,colortbl}\usepackage{xcolor}" "\n"
         r"\definecolor{bokug}{RGB}{0,135,60}\usepackage{tikz}" "\n"
         r"\usetikzlibrary{arrows.meta,calc}" "\n"
-        r"\usepackage{fancyhdr}\pagestyle{fancy}" "\n"
-        r"\renewcommand{\headrulewidth}{0.4pt}" "\n"
+        r"\usepackage{fancyhdr}\usepackage{lastpage}\pagestyle{fancy}" "\n"
+        r"\renewcommand{\headrulewidth}{0.5pt}" "\n"
+        r"\newcommand{\bokulogo}{\begin{tabular}[b]{@{}l@{}}"
+        r"{\color{bokug}\large\bfseries BOKU}\\[-2pt]"
+        r"{\tiny Institut für Konstruktiven}\\[-4pt]"
+        r"{\tiny Ingenieurbau}\end{tabular}}" "\n"
+        r"\newcommand{\resbox}[1]{\tikz[baseline=(r.base)]{\node[draw=bokug,"
+        r"rounded corners=3pt,fill=bokug!6,inner sep=4pt,"
+        r"line width=0.8pt](r){#1};}}" "\n"
         r"\usepackage{enumitem}\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}" "\n")
 
 
 TXT = {
-    'de': dict(uni="Universität für Bodenkultur Wien",
-               course="VU Mechanik – LAWI 100515 (PI)", exam="Prüfung",
-               group="Gruppe", date="Datum", given="Gegebenes System",
-               givenv="Gegebene Größen", task="Aufgabenstellung", sol="Musterlösung",
-               desc="Das ebene System besteht aus Biegeträgern und einem Fachwerk, "
-                    "die durch Gelenke verbunden sind.",
-               t=["Bestimmen Sie den Grad der statischen Bestimmtheit.",
-                  "Berechnen Sie alle Auflagerreaktionen und Gelenkkräfte.",
-                  "Ermitteln Sie alle Stabkräfte des Fachwerks (Zug/Druck).",
-                  "Zeichnen Sie die Schnittgrößen $N$, $V$, $M$ der Biegeträger."],
-               d1="Statische Bestimmtheit", d2="Auflagerreaktionen und Gelenkkräfte",
-               d3="Stabkräfte des Fachwerks", d4="Schnittgrößenverläufe der Biegeträger",
+    'de': dict(course="Mechanik VU -- LAWI 100515 (PI)",
+               course_big="VU MECHANIK -- LAWI 100515 (PI)",
+               examname="Übungsklausur", grp="GRUPPE", page="Seite",
+               name="Name:", matnr="Matrikelnummer:", skz="Studienkennzahl:",
+               notes="Anmerkungen", result="Ergebnis",
+               tasks="Aufgaben:", ptsp="Mögliche Punkte", ptse="Erreichte Punkte",
+               wt="Arbeitszeit:", wtv="90 min", misc="Sonstiges:",
+               misctxt="Schreiben Sie alle Annahmen und Berechnungsschritte klar "
+                       "und eindeutig nachvollziehbar an. Es sind 50\\,\\% der "
+                       "Punkte für eine positive Beurteilung erforderlich.",
+               aids="Erlaubte Hilfsmittel",
+               aidstxt="Es sind lediglich die Formelsammlung von boku-learn sowie "
+                       "Taschenrechner, Geodreieck und Zirkel erlaubt. Bitte "
+                       "verwenden Sie keinen Bleistift und keinen Rotstift für "
+                       "Ihre Antworten, Berechnungen und Zeichnungen! Bitte "
+                       "verwenden Sie kein selbst mitgebrachtes Papier.",
+               bsp="Beispiel",
+               giventxt="\\textbf{Gegeben} ist das nachstehend abgebildete ebene "
+                        "statische System. Die Abmessungen und Systemkennwerte "
+                        "sind der Systemskizze zu entnehmen. Belastet wird dieses "
+                        "Tragwerk durch die eingezeichnete "
+                        "\\textcolor{blue!70!black}{\\textbf{Gleichlast $q$}} "
+                        "sowie \\textcolor{red!80!black}{\\textbf{Einzelkraft(en) "
+                        "$P$}}.",
+               sketch="Systemskizze:", sysvals="Systemkennwerte:", wanted="Gesucht:",
+               g1="Überprüfung der statischen Bestimmtheit.",
+               g2="Ermittlung der Auflagerreaktionen und Gelenkkräfte. Zeichnen "
+                  "Sie die entsprechenden Auflagerreaktionen in die Systemskizze "
+                  "ein und tragen Sie die Zahlenwerte in die nachstehende Tabelle "
+                  "ein.",
+               rhdr="Auflagerreaktionen:", ghdr="Gelenkkräfte:",
+               g3="Ermitteln Sie alle Stabkräfte des Fachwerks (Zug/Druck) und "
+                  "tragen Sie die Zahlenwerte in die nachstehende Tabelle ein.",
+               shdr="Stabkräfte:",
+               g4="Graphische Darstellung der gesamten Schnittgrößenverläufe "
+                  "$M(x)$, $V(x)$ und $N(x)$ mit Angabe der \\textbf{Zahlenwerte} "
+                  "in den charakteristischen Punkten:",
+               mdia="Momentenverlauf", vdia="Querkraftverlauf",
+               ndia="Normalkraftverlauf",
+               scratch="Raum für Nebenrechnungen",
+               sol="Musterlösung", sysw="Systemwerte:", geo="Geometrie",
+               d1="Überprüfung der statischen Bestimmtheit",
+               d2="Auflagerreaktionen und Gelenkkräfte",
+               d3="Stabkräfte des Fachwerks",
+               d4="Schnittgrößenverläufe der Biegeträger",
                det="Abzählkriterium $n=3k-(a+z)$ (Scheiben $k$, Reaktionen $a$, "
                    "Zwischenreaktionen $z$):", determ="statisch bestimmt",
                beam="Biegeträger"),
-    'en': dict(uni="University of Natural Resources and Life Sciences, Vienna (BOKU)",
-               course="VU Mechanik – LAWI 100515 (PI)", exam="Exam",
-               group="Group", date="Date", given="Given system",
-               givenv="Given quantities", task="Tasks", sol="Model solution",
-               desc="The planar system consists of bending beams and a truss "
-                    "connected by hinges.",
-               t=["Determine the degree of static determinacy.",
-                  "Compute all support reactions and hinge forces.",
-                  "Determine all truss member forces (tension/compression).",
-                  "Draw the section forces $N$, $V$, $M$ of the bending beams."],
-               d1="Static determinacy", d2="Support reactions and hinge forces",
-               d3="Truss member forces", d4="Section-force diagrams of the beams",
+    'en': dict(course="Mechanik VU -- LAWI 100515 (PI)",
+               course_big="VU MECHANIK -- LAWI 100515 (PI)",
+               examname="Practice Exam", grp="GROUP", page="Page",
+               name="Name:", matnr="Student ID:", skz="Programme code:",
+               notes="Remarks", result="Result",
+               tasks="Tasks:", ptsp="Possible points", ptse="Achieved points",
+               wt="Working time:", wtv="90 min", misc="Miscellaneous:",
+               misctxt="Write down all assumptions and calculation steps clearly "
+                       "and comprehensibly. 50\\,\\% of the points are required "
+                       "for a positive grade.",
+               aids="Permitted aids",
+               aidstxt="Only the formula collection from boku-learn as well as a "
+                       "calculator, set square and compass are permitted. Please "
+                       "do not use pencil or red pen for your answers, "
+                       "calculations and drawings! Please do not use your own "
+                       "paper.",
+               bsp="Example",
+               giventxt="\\textbf{Given} is the planar structural system shown "
+                        "below. The dimensions and system parameters are given "
+                        "in the system sketch. The structure is loaded by the "
+                        "indicated \\textcolor{blue!70!black}{\\textbf{uniform "
+                        "load $q$}} and \\textcolor{red!80!black}{\\textbf{point "
+                        "load(s) $P$}}.",
+               sketch="System sketch:", sysvals="System parameters:",
+               wanted="Wanted:",
+               g1="Verification of static determinacy.",
+               g2="Determine the support reactions and hinge forces. Draw the "
+                  "corresponding support reactions into the system sketch and "
+                  "enter the numerical values into the table below.",
+               rhdr="Support reactions:", ghdr="Hinge forces:",
+               g3="Determine all truss member forces (tension/compression) and "
+                  "enter the numerical values into the table below.",
+               shdr="Member forces:",
+               g4="Graphical representation of the complete section force "
+                  "diagrams $M(x)$, $V(x)$ and $N(x)$ including the "
+                  "\\textbf{numerical values} at the characteristic points:",
+               mdia="Bending moment diagram", vdia="Shear force diagram",
+               ndia="Normal force diagram",
+               scratch="Space for auxiliary calculations",
+               sol="Musterlösung", sysw="System values:", geo="Geometry",
+               d1="Verification of static determinacy",
+               d2="Support reactions and hinge forces",
+               d3="Truss member forces",
+               d4="Section-force diagrams of the beams",
                det="Counting criterion $n=3k-(a+z)$ (bodies $k$, reactions $a$, "
                    "interaction forces $z$):", determ="statically determinate",
                beam="Beam"),
 }
 
+# points per task on the cover sheet (must sum to 100)
+TASK_POINTS = [10, 30, 30, 30]
 
-def header(t, group, date_str, semester):
-    return (r"\fancyhead[L]{\small " + t['course'] + r"}\fancyhead[R]{\small "
-            + semester + r"}\fancyfoot[C]{\thepage}" "\n"
-            r"\begin{center}{\large\bfseries\color{bokug}" + t['uni'] + r"}\\[2pt]"
-            r"{\large\bfseries " + t['course'] + r"}\\[4pt]"
-            + f"{t['exam']} \\textbf{{{t['group']} {group}}} \\hfill {t['date']}: {date_str}"
-            + r"\\[2pt]\rule{\linewidth}{0.4pt}\end{center}" "\n")
+
+def _reaction_names(model, meta):
+    """Symbol names of the unknown support reactions, e.g. A_H, A_V, M_A, B."""
+    names = []
+    for sup in model.supports:
+        nl = (_node_label(sup.node, model, meta) or f"${sup.node}$").strip('$')
+        if sup.kind == 'fixed':
+            names += [rf"{nl}_H", rf"{nl}_V", rf"M_{{{nl}}}"]
+        elif sup.kind == 'pin':
+            names += [rf"{nl}_H", rf"{nl}_V"]
+        else:                       # roller: single reaction along its normal
+            names += [rf"{nl}"]
+    return names
+
+
+def _hinge_names(model, meta):
+    names = []
+    for h in model.hinges:
+        nl = (_node_label(h.node, model, meta) or f"${h.node}$").strip('$')
+        names += [rf"{nl}_x", rf"{nl}_y"]
+    return names
+
+
+def _blank_table(header, names, colw=2.2):
+    """Bordered one-row answer table with empty cells, reference style."""
+    colw = min(colw, 12.0 / max(len(names), 1))
+    fmt = "|l|" + rf"p{{{colw:.2f}cm}}|" * len(names)
+    cells = " & ".join(rf"${n} =$" for n in names)
+    return (r"\renewcommand{\arraystretch}{1.5}"
+            rf"\begin{{tabular}}{{{fmt}}}\hline "
+            rf"\textbf{{{header}}} & {cells} \\ \hline\end{{tabular}}"
+            r"\renewcommand{\arraystretch}{1.0}")
+
+
+def tikz_beam_outline(model, meta):
+    """Faint copy of the beam geometry as a drawing template for the
+    student's M/V/N diagrams (reference-exam style)."""
+    path = model.scheiben[0].path
+    pts = [model.nodes[p] for p in path]
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    w = max(xs) - min(xs) + 1.4; hgt = max(ys) - min(ys) + 1.4
+    sc = max(0.45, min(1.0, 10.0 / w, 3.6 / hgt))
+    L = [rf"\begin{{tikzpicture}}[scale={sc:.3f},line join=round]",
+         r"  \draw[line width=1.3pt,black!65] "
+         + " -- ".join(Cc(*p) for p in pts) + ";"]
+    for k, p in enumerate(pts):
+        lab = _node_label(path[k], model, meta)
+        if lab:
+            L.append(rf"  \fill[black!65] {Cc(*p)} circle (1.2pt);")
+            L.append(rf"  \node[font=\footnotesize,black!65] at {Cc(*p)} "
+                     rf"[xshift=-6pt,yshift=6pt] {{{lab}}};")
+    L.append(r"\end{tikzpicture}")
+    return "\n".join(L)
+
+
+def hf_exam(t, date_str, semester):
+    """fancyhdr setup matching the reference Angabe: exam title left,
+    page x/y + BOKU logo right; date / course / semester in the footer."""
+    return (r"\renewcommand{\footrulewidth}{0.5pt}" "\n"
+            rf"\fancyhead[L]{{\small {t['examname']} {t['course']}}}" "\n"
+            rf"\fancyhead[R]{{\small {t['page']}~\thepage/\pageref{{LastPage}}"
+            r"\quad\bokulogo}" "\n"
+            rf"\fancyfoot[L]{{\small {date_str}}}"
+            rf"\fancyfoot[C]{{\small {t['course']}}}"
+            rf"\fancyfoot[R]{{\small {semester}}}" "\n")
+
+
+def hf_sol(t, semester):
+    """fancyhdr setup matching the reference Musterlösung."""
+    return (r"\renewcommand{\footrulewidth}{0pt}" "\n"
+            rf"\fancyhead[L]{{\small {t['sol']} {t['examname']} {t['course']}}}" "\n"
+            rf"\fancyhead[R]{{\small {semester}}}" "\n"
+            rf"\fancyfoot[C]{{\small {t['page']}~\thepage}}" "\n")
+
+
+def cover_page(t, group, date_str, semester):
+    tasks = [t['d1'], t['d2'], t['d3'], t['d4']]
+    task_rows = "\n".join(
+        rf"{i+1})\;{name} & {pts} & \\ \hline"
+        for i, (name, pts) in enumerate(zip(tasks, TASK_POINTS)))
+    return rf"""
+\begin{{center}}
+  {{\LARGE\bfseries {t['course_big']}\\[6pt] {semester}}}\\[20pt]
+  {{\Large\bfseries {t['examname']}}}\\[6pt]
+  {{\large {date_str}}}\\[4pt]
+  {{\large {t['grp']}~{group}}}
+\end{{center}}
+
+\vspace{{10pt}}
+\begin{{center}}
+\renewcommand{{\arraystretch}}{{1.6}}
+\begin{{tabular}}{{|>{{\centering\arraybackslash}}p{{4.8cm}}|p{{7.6cm}}|}}
+\hline
+{t['name']} & \\ \hline
+{t['matnr']} & \\ \hline
+{t['skz']} & \\ \hline
+{t['notes']} & \\[26pt] \hline
+\cellcolor{{black!8}}{t['result']} & \cellcolor{{black!8}}\_\_\_\,/\,100 \\ \hline
+\end{{tabular}}
+\end{{center}}
+
+\vspace{{12pt}}
+\textbf{{{t['tasks']}}}\\[3pt]
+\renewcommand{{\arraystretch}}{{1.35}}
+\begin{{tabular}}{{|p{{7.4cm}}|>{{\centering\arraybackslash}}p{{2.9cm}}|>{{\centering\arraybackslash}}p{{2.9cm}}|}}
+\hline
+ & {t['ptsp']} & {t['ptse']} \\ \hline
+{task_rows}
+\end{{tabular}}
+\renewcommand{{\arraystretch}}{{1.0}}
+
+\vspace{{16pt}}
+\textbf{{{t['wt']}}}\\
+{t['wtv']}
+
+\medskip
+\textbf{{{t['misc']}}}\\
+{{\small {t['misctxt']}}}
+
+\medskip
+\textbf{{{t['aids']}}}\\
+{{\small {t['aidstxt']}}}
+"""
 
 
 def make_exam(model, meta, lang, group, date_str, semester):
     t = TXT[lang]
-    parts = [preamble(lang), r"\begin{document}", header(t, group, date_str, semester),
-             rf"\textbf{{{t['given']}}}\par {t['desc']}",
+    rnames = _reaction_names(model, meta)
+    hnames = _hinge_names(model, meta)
+    snames = [rf"S_{{{i+1}}}" for i in range(len(meta['truss']['bars']))]
+
+    sysvals = (r"\begin{center}\renewcommand{\arraystretch}{1.4}"
+               r"\begin{tabular}{|l|" + "l|" * len(meta['given']) + r"}\hline "
+               + rf"\textbf{{{t['sysvals']}}} & " + " & ".join(meta['given'])
+               + r" \\ \hline\end{tabular}\renewcommand{\arraystretch}{1.0}"
+               r"\end{center}")
+
+    item2 = rf"\item {t['g2']}\par\medskip" + "\n" + _blank_table(t['rhdr'], rnames)
+    if hnames:
+        item2 += r"\\[10pt]" + "\n" + _blank_table(t['ghdr'], hnames)
+
+    diagrams = []
+    for title in (t['mdia'], t['vdia'], t['ndia']):
+        diagrams.append(
+            rf"\par\textbf{{{title}}}\par\vspace{{4pt}}" "\n"
+            r"\begin{center}" + tikz_beam_outline(model, meta) + r"\end{center}"
+            r"\vspace{2.4cm}")
+
+    parts = [preamble(lang, sans=True), r"\begin{document}",
+             hf_exam(t, date_str, semester),
+             cover_page(t, group, date_str, semester),
+             r"\newpage",
+             rf"\section*{{1.~{t['bsp']} \hfill (100\,\%)}}",
+             t['giventxt'],
+             rf"\par\medskip\textbf{{{t['sketch']}}}",
              tikz_system(model, meta, True),
-             rf"\textbf{{{t['givenv']}:}}\quad " + r"\quad ".join(meta['given']),
-             r"\par\medskip", rf"\textbf{{{t['task']}}}\par",
-             r"\begin{enumerate}[label=\textbf{\arabic*.}]"]
-    for ti in t['t']:
-        parts.append(rf"  \item {ti}")
-    parts += [r"\end{enumerate}", r"\end{document}"]
+             sysvals,
+             rf"\medskip\textbf{{{t['wanted']}}}",
+             r"\begin{enumerate}[leftmargin=*,label=\arabic*.,itemsep=10pt]",
+             rf"\item {t['g1']}",
+             item2,
+             rf"\item {t['g3']}\par\medskip" + "\n" + _blank_table(t['shdr'], snames),
+             rf"\item {t['g4']}",
+             r"\end{enumerate}",
+             "\n".join(diagrams),
+             r"\newpage {\color{black!40}\small\itshape " + t['scratch'] + r"}",
+             r"\newpage {\color{black!40}\small\itshape " + t['scratch'] + r"}",
+             r"\end{document}"]
     return "\n".join(parts)
 
 
@@ -742,32 +1006,59 @@ def make_solution(model, meta, lang, group, date_str, semester):
     a_cnt = sum({'fixed': 3, 'pin': 2, 'roller': 1}[s.kind] for s in model.supports)
     z_cnt = 2 * len(model.hinges)
     n_det = 3 * k - (a_cnt + z_cnt)
-    # reactions text
-    rlines = []
+
+    # boxed reaction results, named like the exam blanks (A_H, A_V, M_A, B)
+    sup_of = {s.node: s for s in model.supports}
+    rboxes = []
     for node, rc in glob['reactions'].items():
-        lab = _node_label(node, model, meta).strip('$') or node
-        comp = [rf"R_x={fnum(float(rc.get('Rx',0)),lang)}",
-                rf"R_y={fnum(float(rc.get('Ry',0)),lang)}"]
-        if 'M' in rc:
-            comp.append(rf"M={fnum(float(rc['M']),lang)}")
-        rlines.append(rf"${lab}:\ " + ",\\ ".join(comp) + r"$")
-    hlines = []
+        nl = (_node_label(node, model, meta) or f"${node}$").strip('$')
+        sup = sup_of[node]
+        if sup.kind == 'roller':
+            val = float(rc.get('R', rc.get('Ry', 0)))
+            rboxes.append(rf"\resbox{{${nl} = {fnum(val, lang)}$\,kN}}")
+        else:
+            rboxes.append(rf"\resbox{{${nl}_H = "
+                          rf"{fnum(float(rc.get('Rx', 0)), lang)}$\,kN}}")
+            rboxes.append(rf"\resbox{{${nl}_V = "
+                          rf"{fnum(float(rc.get('Ry', 0)), lang)}$\,kN}}")
+            if 'M' in rc:
+                rboxes.append(rf"\resbox{{$M_{{{nl}}} = "
+                              rf"{fnum(float(rc['M']), lang)}$\,kNm}}")
+    hboxes = []
     for hn, hc in glob['hinges'].items():
-        lab = _node_label(hn, model, meta).strip('$') or hn
-        hlines.append(rf"${lab}:\ H_x={fnum(float(hc['Hx']),lang)},\ "
-                      rf"H_y={fnum(float(hc['Hy']),lang)}$")
-    parts = [preamble(lang), r"\begin{document}", header(t, group, date_str, semester),
-             rf"\begin{{center}}\textbf{{\large {t['sol']}}}\end{{center}}",
+        nl = (_node_label(hn, model, meta) or f"${hn}$").strip('$')
+        hboxes.append(rf"\resbox{{${nl}_x = {fnum(float(hc['Hx']), lang)}$\,kN}}")
+        hboxes.append(rf"\resbox{{${nl}_y = {fnum(float(hc['Hy']), lang)}$\,kN}}")
+
+    title_block = (
+        r"\begin{center}"
+        rf"{{\LARGE\bfseries {t['sol']}}}\\[6pt]"
+        rf"{{\large {t['course']} \quad {semester}}}\\[3pt]"
+        rf"{{\large {t['examname']} ({date_str}) -- {t['grp'].title()}~{group}}}"
+        r"\end{center}"
+        r"\vspace{-2pt}\rule{\linewidth}{0.6pt}\medskip")
+
+    parts = [preamble(lang, sans=False), r"\begin{document}",
+             hf_sol(t, semester),
+             title_block,
+             rf"\section*{{1.~{t['bsp']} \hfill (100\,\%)}}",
+             rf"\textbf{{{t['sysw']}}} " + ",\\quad ".join(meta['given']) + ".",
+             rf"\par\medskip\textbf{{{t['geo']}}}",
              tikz_system(model, meta, True),
-             rf"\par\medskip\textbf{{1.\ {t['d1']}}}\par {t['det']}",
-             rf"\[ n=3k-(a+z)=3\cdot{k}-({a_cnt}+{z_cnt})={n_det}"
-             rf"\ \Rightarrow\ \text{{{t['determ']}}} \]",
-             rf"\par\medskip\textbf{{2.\ {t['d2']}}}\par",
-             r"\quad ".join(rlines) + r"\par " + r"\quad ".join(hlines),
-             rf"\par\medskip\textbf{{3.\ {t['d3']}}}\par",
+             rf"\subsection*{{1.1\ {t['d1']}}}",
+             t['det'],
+             rf"\[ n = 3k-(a+z) = 3\cdot{k}-({a_cnt}+{z_cnt}) = {n_det} \]",
+             rf"\begin{{center}}\resbox{{$n = {n_det}$:\ {t['determ']}}}"
+             r"\end{center}",
+             rf"\subsection*{{1.2\ {t['d2']}}}",
+             rf"\textbf{{{t['rhdr']}}}\par\medskip",
+             r"\quad".join(rboxes),
+             rf"\par\medskip\textbf{{{t['ghdr']}}}\par\medskip",
+             r"\quad".join(hboxes),
+             rf"\subsection*{{1.3\ {t['d3']}}}",
              truss_table(model, meta, res['truss'], lang),
              tikz_truss_solution(model, meta, res['truss'], lang),
-             rf"\par\medskip\textbf{{4.\ {t['d4']}}}\par", r"\begin{center}"]
+             rf"\subsection*{{1.4\ {t['d4']}}}", r"\begin{center}"]
     cols = ['blue!70!black', 'red!70!black', 'green!45!black']
     titles = ['$M(s)$', '$V(s)$', '$N(s)$']
     for bi, sid in enumerate(meta['beam_sids']):

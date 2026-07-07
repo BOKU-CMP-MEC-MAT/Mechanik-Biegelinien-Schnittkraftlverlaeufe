@@ -101,7 +101,9 @@ def build_system(seed: int) -> System:
     n      = rng.choice([1, 2, 2])            # favour the richer 7-member truss
     panel  = float(rng.choice([1.5, 2.0]))    # bay length
     height = panel                            # 45° diagonals -> clean sqrt2 forces
-    a      = float(rng.choice([3.0, 4.0, 5.0]))   # beam length A->C
+    # beam length as a clean multiple of the base measure l (= panel),
+    # so every dimension in the sketch reads as a fraction/multiple of l
+    a      = float(rng.choice([1.5, 2.0, 3.0])) * panel   # beam length A->C
     theta  = rng.choice([0, 90, 180, 270])    # drawing orientation
 
     # --- nodes (canonical: beam horizontal A=(0,0) -- C=(a,0)) -------

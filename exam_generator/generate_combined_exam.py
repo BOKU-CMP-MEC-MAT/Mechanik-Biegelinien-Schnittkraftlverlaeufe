@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import math
 import subprocess
+from fractions import Fraction
 from pathlib import Path
 
 import combined_system as cs
@@ -53,6 +54,14 @@ def fsigned(v: float, lang: str = 'de', dec: int = 2) -> str:
 # ════════════════════════════════════════════════════════════════════
 def C(x: float, y: float) -> str:
     return f"({x:.3f},{y:.3f})"
+
+
+def ell_label(fr: Fraction) -> str:
+    """Length as a multiple/fraction of the base measure l:
+    1 -> $\\ell$,  2 -> $2\\ell$,  3/2 -> $3\\ell/2$,  1/2 -> $\\ell/2$."""
+    n, d = fr.numerator, fr.denominator
+    num = r"\ell" if n == 1 else rf"{n}\ell"
+    return rf"${num}$" if d == 1 else rf"${num}/{d}$"
 
 
 def member_labels(sys: cs.System):
@@ -153,15 +162,25 @@ def tikz_system(sys: cs.System, show_numbers: bool = True) -> str:
         elif name.startswith('U'):
             L.append(rf"  \node[below=2pt] at ({name}) {{${name[0]}_{{{name[1:]}}}$}};")
 
-    # --- dimension lines ---
-    dy = -H - 0.95
+    # --- dimension lines (outside the figure; all lengths as multiples of
+    #     the base measure l, extension lines are short fixed ticks) ---
+    aratio = Fraction(a / sys.panel).limit_denominator(12)
+    dy = -H - 1.35                              # below deepest chord + roller glyph
+    for xx in (0.0, a, a + sys.panel):          # short vertical ticks
+        L.append(rf"  \draw[thin,gray] ({xx:.3f},{dy+0.28:.3f}) -- "
+                 rf"({xx:.3f},{dy-0.12:.3f});")
+    dimlab = r"node[midway,fill=white,inner sep=0.8pt,font=\footnotesize]"
     L.append(rf"  \draw[<->,gray] ({0:.3f},{dy:.3f}) -- ({a:.3f},{dy:.3f}) "
-             rf"node[midway,below,font=\footnotesize]{{$a={fnum(a)}$\,m}};")
+             rf"{dimlab}{{{ell_label(aratio)}}};")
     L.append(rf"  \draw[<->,gray] ({a:.3f},{dy:.3f}) -- ({a+sys.panel:.3f},{dy:.3f}) "
-             rf"node[midway,below,font=\footnotesize]{{$\ell={fnum(sys.panel)}$\,m}};")
-    # height dimension placed just LEFT of C (clear of the truss & roller)
-    L.append(rf"  \draw[<->,gray] ({a-0.45:.3f},0) -- ({a-0.45:.3f},{-H:.3f}) "
-             rf"node[midway,left,font=\footnotesize]{{$h={fnum(H)}$\,m}};")
+             rf"{dimlab}{{$\ell$}};")
+    # height dimension placed LEFT of the fixed-support wall at A
+    dx = -0.85
+    for yy in (0.0, -H):                        # short horizontal ticks
+        L.append(rf"  \draw[thin,gray] ({dx-0.12:.3f},{yy:.3f}) -- "
+                 rf"({dx+0.28:.3f},{yy:.3f});")
+    L.append(rf"  \draw[<->,gray] ({dx:.3f},0) -- ({dx:.3f},{-H:.3f}) "
+             rf"{dimlab}{{{ell_label(Fraction(H / sys.panel).limit_denominator(12))}}};")
 
     L.append(r"\end{tikzpicture}")
     L.append(r"\end{center}")
@@ -359,9 +378,7 @@ def header_block(t, group, date_str, semester):
 
 
 def given_values(sys: cs.System, lang: str) -> str:
-    items = [rf"$a = {fnum(sys.beam_len, lang)}$\,m",
-             rf"$\ell = {fnum(sys.panel, lang)}$\,m",
-             rf"$h = {fnum(sys.height, lang)}$\,m"]
+    items = [rf"$\ell = {fnum(sys.panel, lang)}$\,m"]
     if sys.q > 0:
         items.append(rf"$q = {fnum(sys.q, lang)}$\,kN/m")
     for (node, Fx, Fy) in sys.point_loads:
